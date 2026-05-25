@@ -1,0 +1,1702 @@
+<!DOCTYPE html>
+<!-- saved from url=(0052)https://oepoyoprakoso-wq.github.io/Net-Zero-Roadmap/ -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cement CO₂ Roadmap — Scope 1 &amp; 2 Simulation</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+  :root {
+    --bg:#f0f4f8; --surface:#ffffff; --surface2:#f1f5f9; --border:#cbd5e1;
+    --yellow:#d97706; --yellow-bg:#fefce8;
+    --blue:#2563eb;   --blue-bg:#eff6ff;
+    --green:#059669;  --red:#dc2626; --text:#1e293b; --muted:#64748b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;}
+  header{background:linear-gradient(135deg,#1e3a5f 0%,#1d4ed8 100%);border-bottom:1px solid #1e40af;padding:20px 32px;display:flex;align-items:center;gap:16px;}
+  .logo-icon{width:44px;height:44px;background:#fbbf24;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;}
+  header h1{font-size:20px;font-weight:800;letter-spacing:-0.5px;color:#ffffff;}
+  header p{font-size:12px;color:#bfdbfe;font-family:'JetBrains Mono',monospace;}
+  .tabs{display:flex;background:#ffffff;border-bottom:2px solid var(--border);padding:0 32px;gap:4px;overflow-x:auto;box-shadow:0 2px 6px rgba(0,0,0,0.06);}
+  .tab{padding:14px 20px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:all 0.2s;font-family:'Syne',sans-serif;}
+  .tab:hover{color:#1e293b;background:#f8fafc;}
+  .tab.active{color:#1d4ed8;border-bottom-color:#1d4ed8;background:#eff6ff;}
+  .page{display:none;padding:28px 32px;}
+  .page.active{display:block;}
+  .legend-bar{display:flex;gap:20px;margin-bottom:20px;flex-wrap:wrap;}
+  .legend-item{display:flex;align-items:center;gap:8px;font-size:12px;font-family:'JetBrains Mono',monospace;color:#475569;}
+  .legend-dot{width:14px;height:14px;border-radius:3px;}
+  .section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#94a3b8;margin:24px 0 12px;padding-bottom:8px;border-bottom:2px solid var(--border);}
+  @keyframes blink-glow{0%,100%{color:#f97316;text-shadow:0 0 8px #f97316,0 0 20px #fb923c;opacity:1;}50%{color:#fbbf24;text-shadow:0 0 14px #fbbf24,0 0 30px #f59e0b;opacity:0.75;}}
+  .section-title-highlight{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:1.8px;margin:24px 0 12px;padding:10px 16px;border-radius:8px;background:linear-gradient(90deg,#1e293b 0%,#0f172a 100%);border-left:4px solid #f97316;border-bottom:2px solid #f97316;animation:blink-glow 1.6s ease-in-out infinite;}
+  .input-row{background:#fefce8;border:1.5px solid #fcd34d;border-radius:10px;padding:12px 16px;box-shadow:0 1px 4px rgba(217,119,6,0.07);}
+  .input-row label{display:block;font-size:11px;font-weight:700;color:#92400e;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;}
+  .result-row{background:#eff6ff;border:1.5px solid #93c5fd;border-radius:10px;padding:12px 16px;box-shadow:0 1px 4px rgba(37,99,235,0.07);}
+  .result-row label{display:block;font-size:11px;font-weight:700;color:#1d4ed8;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;}
+  .year-inputs{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
+  .year-col{display:flex;flex-direction:column;gap:3px;}
+  .year-label{font-size:10px;color:#94a3b8;font-family:'JetBrains Mono',monospace;text-align:center;font-weight:600;}
+  .year-col input{width:100%;background:#fffbeb;border:1.5px solid #fcd34d;color:#92400e;border-radius:6px;padding:5px 4px;text-align:center;font-size:11px;font-family:'JetBrains Mono',monospace;font-weight:600;outline:none;transition:all 0.2s;}
+  .year-col input:focus{border-color:#d97706;background:#fef3c7;box-shadow:0 0 0 3px rgba(217,119,6,0.15);}
+  .year-col input:disabled{opacity:0.4;cursor:not-allowed;background:#f1f5f9;border-color:#e2e8f0;color:#94a3b8;}
+  .result-row .year-col span{background:#dbeafe;border:1.5px solid #93c5fd;color:#1d4ed8;border-radius:6px;padding:5px 4px;text-align:center;font-size:11px;font-family:'JetBrains Mono',monospace;font-weight:600;display:block;width:100%;}
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:20px;}
+  .kpi-card{background:#ffffff;border:1.5px solid var(--border);border-radius:12px;padding:16px;transition:all 0.2s;box-shadow:0 2px 6px rgba(0,0,0,0.04);}
+  .kpi-card:hover{border-color:#2563eb;box-shadow:0 4px 14px rgba(37,99,235,0.12);}
+  .kpi-label{font-size:11px;color:#64748b;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;}
+  .kpi-value{font-size:26px;font-weight:800;line-height:1;}
+  .kpi-unit{font-size:11px;color:#94a3b8;margin-top:4px;font-family:'JetBrains Mono',monospace;}
+  .kpi-green{color:#059669;} .kpi-yellow{color:#d97706;} .kpi-blue{color:#2563eb;} .kpi-red{color:#dc2626;}
+  .chart-card{background:#ffffff;border:1.5px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,0.04);}
+  .chart-title{font-size:14px;font-weight:700;margin-bottom:4px;color:#1e293b;}
+  .chart-subtitle{font-size:11px;color:#64748b;margin-bottom:16px;font-family:'JetBrains Mono',monospace;}
+  canvas{max-height:380px;}
+  table{width:100%;border-collapse:collapse;font-size:12px;font-family:'JetBrains Mono',monospace;}
+  th{background:#f1f5f9;padding:10px 12px;text-align:left;font-weight:700;color:#475569;border-bottom:2px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;}
+  td{padding:9px 12px;border-bottom:1px solid #e2e8f0;color:#334155;}
+  tr:last-child td{border-bottom:none;}
+  tr:hover td{background:#f8fafc;}
+  .td-blue{color:#1d4ed8;font-weight:600;} .td-green{color:#059669;font-weight:600;} .td-yellow{color:#d97706;font-weight:600;} .td-red{color:#dc2626;font-weight:600;}
+  .flex-col{display:flex;flex-direction:column;gap:12px;}
+  footer{background:linear-gradient(135deg,#1e3a5f 0%,#1d4ed8 100%);color:#bfdbfe;padding:18px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:40px;}
+  .footer-brand{font-weight:800;font-size:13px;color:#fff;display:flex;align-items:center;gap:8px;}
+  .footer-contact{font-family:'JetBrains Mono',monospace;font-size:12px;display:flex;align-items:center;gap:8px;color:#bfdbfe;}
+  .footer-contact a{color:#93c5fd;text-decoration:none;border-bottom:1px solid rgba(147,197,253,0.4);padding-bottom:1px;transition:all 0.2s;}
+  .footer-contact a:hover{color:#fff;border-bottom-color:#fff;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-icon">🏭</div>
+  <div>
+    <h1>Cement CO₂ Roadmap — Scope 1 &amp; 2 Simulation</h1>
+    <p>Dynamic model · All results recalculate instantly when inputs change</p>
+  </div>
+</header>
+
+<div class="tabs">
+  <div class="tab" onclick="showTab(&#39;tutorial&#39;,this)">📖 Tutorial / Readme</div>
+  <div class="tab active" onclick="showTab(&#39;input&#39;,this)">⚙️ Input Scope 1 &amp; 2</div>
+  <div class="tab" onclick="showTab(&#39;roadmap&#39;,this)">📈 Graph Roadmap</div>
+  <div class="tab" onclick="showTab(&#39;specific&#39;,this)">📊 Graph Specific Emission</div>
+  <div class="tab" onclick="showTab(&#39;waterfall&#39;,this)">🌊 Waterfall Graph</div>
+</div>
+
+<!-- ===== INPUT TAB ===== -->
+<div id="tab-input" class="page active">
+  <div class="legend-bar">
+    <div class="legend-item"><div class="legend-dot" style="background:#f5c842"></div>Yellow = Editable Input Parameter</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div>Blue = Calculated Result</div>
+  </div>
+
+  <div class="section-title">Production Parameters</div>
+  <div class="flex-col">
+    <div class="input-row"><label>Reduction Clinker to Cement Ratio — CF (%)</label><div class="year-inputs" id="inp-cf"><div class="year-col"><span class="year-label">2010</span><input type="number" step="any" data-key="cf" data-idx="0"></div><div class="year-col"><span class="year-label">2025</span><input type="number" step="any" data-key="cf" data-idx="1"></div><div class="year-col"><span class="year-label">2030</span><input type="number" step="any" data-key="cf" data-idx="2"></div><div class="year-col"><span class="year-label">2035</span><input type="number" step="any" data-key="cf" data-idx="3"></div><div class="year-col"><span class="year-label">2040</span><input type="number" step="any" data-key="cf" data-idx="4"></div><div class="year-col"><span class="year-label">2045</span><input type="number" step="any" data-key="cf" data-idx="5"></div><div class="year-col"><span class="year-label">2050</span><input type="number" step="any" data-key="cf" data-idx="6"></div></div></div>
+    <div class="input-row"><label>Clinker Production (ton)</label><div class="year-inputs" id="inp-clk"><div class="year-col"><span class="year-label">2010</span><input type="number" step="any" data-key="clk" data-idx="0"></div><div class="year-col"><span class="year-label">2025</span><input type="number" step="any" data-key="clk" data-idx="1"></div><div class="year-col"><span class="year-label">2030</span><input type="number" step="any" data-key="clk" data-idx="2"></div><div class="year-col"><span class="year-label">2035</span><input type="number" step="any" data-key="clk" data-idx="3"></div><div class="year-col"><span class="year-label">2040</span><input type="number" step="any" data-key="clk" data-idx="4"></div><div class="year-col"><span class="year-label">2045</span><input type="number" step="any" data-key="clk" data-idx="5"></div><div class="year-col"><span class="year-label">2050</span><input type="number" step="any" data-key="clk" data-idx="6"></div></div></div>
+    <div class="result-row"><label>Cement Equivalent (ton) = Clinker ÷ (CF% / 100)</label><div class="year-inputs" id="res-cemEq"><div class="year-col"><span class="year-label">2010</span><span>43200000</span></div><div class="year-col"><span class="year-label">2025</span><span>85976207</span></div><div class="year-col"><span class="year-label">2030</span><span>100402855</span></div><div class="year-col"><span class="year-label">2035</span><span>121766478</span></div><div class="year-col"><span class="year-label">2040</span><span>132222222</span></div><div class="year-col"><span class="year-label">2045</span><span>134354839</span></div><div class="year-col"><span class="year-label">2050</span><span>138833333</span></div></div></div>
+  </div>
+
+  <div class="section-title">Scope 1 — Combustion &amp; Process Inputs</div>
+  <div class="flex-col">
+    <div class="input-row"><label>TSR Biomass (%)</label><div class="year-inputs" id="inp-tsrb"><div class="year-col"><span class="year-label">2010</span><input type="number" step="any" data-key="tsrb" data-idx="0"></div><div class="year-col"><span class="year-label">2025</span><input type="number" step="any" data-key="tsrb" data-idx="1"></div><div class="year-col"><span class="year-label">2030</span><input type="number" step="any" data-key="tsrb" data-idx="2"></div><div class="year-col"><span class="year-label">2035</span><input type="number" step="any" data-key="tsrb" data-idx="3"></div><div class="year-col"><span class="year-label">2040</span><input type="number" step="any" data-key="tsrb" data-idx="4"></div><div class="year-col"><span class="year-label">2045</span><input type="number" step="any" data-key="tsrb" data-idx="5"></div><div class="year-col"><span class="year-label">2050</span><input type="number" step="any" data-key="tsrb" data-idx="6"></div></div></div>
+    <div class="input-row"><label>TSR Alternative Fossil Fuel (%)</label><div class="year-inputs" id="inp-tsraf"><div class="year-col"><span class="year-label">2010</span><input type="number" step="any" data-key="tsraf" data-idx="0"></div><div class="year-col"><span class="year-label">2025</span><input type="number" step="any" data-key="tsraf" data-idx="1"></div><div class="year-col"><span class="year-label">2030</span><input type="number" step="any" data-key="tsraf" data-idx="2"></div><div class="year-col"><span class="year-label">2035</span><input type="number" step="any" data-key="tsraf" data-idx="3"></div><div class="year-col"><span class="year-label">2040</span><input type="number" step="any" data-key="tsraf" data-idx="4"></div><div class="year-col"><span class="year-label">2045</span><input type="number" step="any" data-key="tsraf" data-idx="5"></div><div class="year-col"><span class="year-label">2050</span><input type="number" step="any" data-key="tsraf" data-idx="6"></div></div></div>
+    <div class="result-row"><label>TSR Traditional Fossil Fuel (%) — auto = 100 − Biomass − Alt Fossil</label><div class="year-inputs" id="res-tsrtrad"><div class="year-col"><span class="year-label">2010</span><span>97.00</span></div><div class="year-col"><span class="year-label">2025</span><span>89.00</span></div><div class="year-col"><span class="year-label">2030</span><span>77.00</span></div><div class="year-col"><span class="year-label">2035</span><span>72.00</span></div><div class="year-col"><span class="year-label">2040</span><span>69.00</span></div><div class="year-col"><span class="year-label">2045</span><span>65.00</span></div><div class="year-col"><span class="year-label">2050</span><span>60.00</span></div></div></div>
+    <div class="input-row"><label>Specific Thermal Energy — STEC (MJ/ton Clinker)</label><div class="year-inputs" id="inp-stec"><div class="year-col"><span class="year-label">2010</span><input type="number" step="any" data-key="stec" data-idx="0"></div><div class="year-col"><span class="year-label">2025</span><input type="number" step="any" data-key="stec" data-idx="1"></div><div class="year-col"><span class="year-label">2030</span><input type="number" step="any" data-key="stec" data-idx="2"></div><div class="year-col"><span class="year-label">2035</span><input type="number" step="any" data-key="stec" data-idx="3"></div><div class="year-col"><span class="year-label">2040</span><input type="number" step="any" data-key="stec" data-idx="4"></div><div class="year-col"><span class="year-label">2045</span><input type="number" step="any" data-key="stec" data-idx="5"></div><div class="year-col"><span class="year-label">2050</span><input type="number" step="any" data-key="stec" data-idx="6"></div></div></div>
+    <div class="input-row"><label>Calcination Factor (kg CO₂/ton Clinker)</label><div class="year-inputs" id="inp-calc"><div class="year-col"><span class="year-label">2010</span><input type="number" step="any" data-key="calc" data-idx="0"></div><div class="year-col"><span class="year-label">2025</span><input type="number" step="any" data-key="calc" data-idx="1"></div><div class="year-col"><span class="year-label">2030</span><input type="number" step="any" data-key="calc" data-idx="2"></div><div class="year-col"><span class="year-label">2035</span><input type="number" step="any" data-key="calc" data-idx="3"></div><div class="year-col"><span class="year-label">2040</span><input type="number" step="any" data-key="calc" data-idx="4"></div><div class="year-col"><span class="year-label">2045</span><input type="number" step="any" data-key="calc" data-idx="5"></div><div class="year-col"><span class="year-label">2050</span><input type="number" step="any" data-key="calc" data-idx="6"></div></div></div>
+  </div>
+
+  <div class="section-title">Scope 2 — Electricity Inputs</div>
+  <div class="flex-col">
+    <div class="input-row"><label>Specific Electrical Energy Consumption (kWh/ton Cem eq)</label><div class="year-inputs" id="inp-seec"><div class="year-col"><span class="year-label">2010</span><input type="number" step="any" data-key="seec" data-idx="0"></div><div class="year-col"><span class="year-label">2025</span><input type="number" step="any" data-key="seec" data-idx="1"></div><div class="year-col"><span class="year-label">2030</span><input type="number" step="any" data-key="seec" data-idx="2"></div><div class="year-col"><span class="year-label">2035</span><input type="number" step="any" data-key="seec" data-idx="3"></div><div class="year-col"><span class="year-label">2040</span><input type="number" step="any" data-key="seec" data-idx="4"></div><div class="year-col"><span class="year-label">2045</span><input type="number" step="any" data-key="seec" data-idx="5"></div><div class="year-col"><span class="year-label">2050</span><input type="number" step="any" data-key="seec" data-idx="6"></div></div></div>
+    <div class="input-row"><label>PLN Grid Electricity Emission Factor (ton CO₂/MWh)</label><div class="year-inputs" id="inp-pln"><div class="year-col"><span class="year-label">2010</span><input type="number" step="any" data-key="pln" data-idx="0"></div><div class="year-col"><span class="year-label">2025</span><input type="number" step="any" data-key="pln" data-idx="1"></div><div class="year-col"><span class="year-label">2030</span><input type="number" step="any" data-key="pln" data-idx="2"></div><div class="year-col"><span class="year-label">2035</span><input type="number" step="any" data-key="pln" data-idx="3"></div><div class="year-col"><span class="year-label">2040</span><input type="number" step="any" data-key="pln" data-idx="4"></div><div class="year-col"><span class="year-label">2045</span><input type="number" step="any" data-key="pln" data-idx="5"></div><div class="year-col"><span class="year-label">2050</span><input type="number" step="any" data-key="pln" data-idx="6"></div></div></div>
+    <div class="input-row"><label>Installed PLTS at Cement Plant (MWp)</label><div class="year-inputs" id="inp-plts"><div class="year-col"><span class="year-label">2010</span><input type="number" step="any" data-key="plts" data-idx="0"></div><div class="year-col"><span class="year-label">2025</span><input type="number" step="any" data-key="plts" data-idx="1"></div><div class="year-col"><span class="year-label">2030</span><input type="number" step="any" data-key="plts" data-idx="2"></div><div class="year-col"><span class="year-label">2035</span><input type="number" step="any" data-key="plts" data-idx="3"></div><div class="year-col"><span class="year-label">2040</span><input type="number" step="any" data-key="plts" data-idx="4"></div><div class="year-col"><span class="year-label">2045</span><input type="number" step="any" data-key="plts" data-idx="5"></div><div class="year-col"><span class="year-label">2050</span><input type="number" step="any" data-key="plts" data-idx="6"></div></div></div>
+    <div class="input-row"><label>Waste Heat Recovery Power Gen (MWh)</label><div class="year-inputs" id="inp-whr"><div class="year-col"><span class="year-label">2010</span><input type="number" step="any" data-key="whr" data-idx="0"></div><div class="year-col"><span class="year-label">2025</span><input type="number" step="any" data-key="whr" data-idx="1"></div><div class="year-col"><span class="year-label">2030</span><input type="number" step="any" data-key="whr" data-idx="2"></div><div class="year-col"><span class="year-label">2035</span><input type="number" step="any" data-key="whr" data-idx="3"></div><div class="year-col"><span class="year-label">2040</span><input type="number" step="any" data-key="whr" data-idx="4"></div><div class="year-col"><span class="year-label">2045</span><input type="number" step="any" data-key="whr" data-idx="5"></div><div class="year-col"><span class="year-label">2050</span><input type="number" step="any" data-key="whr" data-idx="6"></div></div></div>
+  </div>
+
+  <div class="section-title">Carbon Capture — CCUS (Mio ton)</div>
+  <div class="flex-col">
+    <div class="input-row">
+      <label>CCUS — 2035, 2040, 2045 editable · 2050 auto = 90% × Gross Scope1 × CemEq / 1e9 (formula J30)</label>
+      <div class="year-inputs" id="inp-ccus"><div class="year-col"><span class="year-label">2010</span><input type="number" disabled=""></div><div class="year-col"><span class="year-label">2025</span><input type="number" disabled=""></div><div class="year-col"><span class="year-label">2030</span><input type="number" disabled=""></div><div class="year-col"><span class="year-label">2035</span><input type="number" step="any" data-key="ccus" data-idx="3"></div><div class="year-col"><span class="year-label">2040</span><input type="number" step="any" data-key="ccus" data-idx="4"></div><div class="year-col"><span class="year-label">2045</span><input type="number" step="any" data-key="ccus" data-idx="5"></div><div class="year-col"><span class="year-label">2050</span><span id="ccus-2050-val" style="background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.3); color: rgb(147, 197, 253); border-radius: 6px; padding: 5px 4px; text-align: center; font-size: 11px; font-family: &quot;JetBrains Mono&quot;, monospace; display: block; width: 100%;">60.2927</span></div></div>
+    </div>
+  </div>
+
+  <div class="section-title-highlight">Results — Specific CO₂ Emissions (Blue = Calculated)</div>
+  <div class="flex-col">
+    <div class="result-row"><label>Specific CO₂ Scope 2 — Electricity (kg CO₂/ton cem eq)</label><div class="year-inputs" id="res-scope2"><div class="year-col"><span class="year-label">2010</span><span>93.45</span></div><div class="year-col"><span class="year-label">2025</span><span>65.59</span></div><div class="year-col"><span class="year-label">2030</span><span>58.03</span></div><div class="year-col"><span class="year-label">2035</span><span>47.56</span></div><div class="year-col"><span class="year-label">2040</span><span>44.60</span></div><div class="year-col"><span class="year-label">2045</span><span>40.78</span></div><div class="year-col"><span class="year-label">2050</span><span>35.57</span></div></div></div>
+    <div class="result-row"><label>Specific Gross CO₂ Scope 1 (kg CO₂/ton cem eq)</label><div class="year-inputs" id="res-scope1g"><div class="year-col"><span class="year-label">2010</span><span>726.34</span></div><div class="year-col"><span class="year-label">2025</span><span>585.20</span></div><div class="year-col"><span class="year-label">2030</span><span>568.92</span></div><div class="year-col"><span class="year-label">2035</span><span>538.29</span></div><div class="year-col"><span class="year-label">2040</span><span>518.76</span></div><div class="year-col"><span class="year-label">2045</span><span>505.33</span></div><div class="year-col"><span class="year-label">2050</span><span>482.53</span></div></div></div>
+    <div class="result-row"><label>Specific Net CO₂ Scope 1 (kg CO₂/ton cem eq)</label><div class="year-inputs" id="res-scope1n"><div class="year-col"><span class="year-label">2010</span><span>723.90</span></div><div class="year-col"><span class="year-label">2025</span><span>572.04</span></div><div class="year-col"><span class="year-label">2030</span><span>540.97</span></div><div class="year-col"><span class="year-label">2035</span><span>506.28</span></div><div class="year-col"><span class="year-label">2040</span><span>484.33</span></div><div class="year-col"><span class="year-label">2045</span><span>468.18</span></div><div class="year-col"><span class="year-label">2050</span><span>441.80</span></div></div></div>
+    <div class="result-row"><label>Total Specific Gross CO₂ Scope 1 + Scope 2 (kg CO₂/ton cem eq)</label><div class="year-inputs" id="res-total"><div class="year-col"><span class="year-label">2010</span><span>819.79</span></div><div class="year-col"><span class="year-label">2025</span><span>650.79</span></div><div class="year-col"><span class="year-label">2030</span><span>626.95</span></div><div class="year-col"><span class="year-label">2035</span><span>585.85</span></div><div class="year-col"><span class="year-label">2040</span><span>563.36</span></div><div class="year-col"><span class="year-label">2045</span><span>546.11</span></div><div class="year-col"><span class="year-label">2050</span><span>518.10</span></div></div></div>
+  </div>
+
+  <div class="section-title-highlight">Results — Absolute CO₂ Roadmap (Mio ton CO₂)</div>
+  <div class="chart-card" style="overflow-x:auto;">
+    <table>
+      <thead><tr>
+        <th>Scenario / Row</th><th>2010 Baseline</th><th>2025</th><th>2030</th><th>2035</th><th>2040</th><th>2045</th><th>2050</th>
+      </tr></thead>
+      <tbody id="result-tbody">
+    <tr><td>BAU (Mio ton CO₂)</td>
+    <td class="td-red">35.4148</td><td class="td-red">70.4822</td><td class="td-red">82.3090</td><td class="td-red">99.8226</td><td class="td-red">108.3941</td><td class="td-red">110.1424</td><td class="td-red">113.8138</td>
+    </tr>
+    <tr><td>After STEC Initiatives</td>
+    <td class="td-yellow">35.4148</td><td class="td-yellow">68.1995</td><td class="td-yellow">79.6047</td><td class="td-yellow">96.4961</td><td class="td-yellow">104.7312</td><td class="td-yellow">106.3172</td><td class="td-yellow">109.5295</td>
+    </tr>
+    <tr><td>After CF Initiatives</td>
+    <td class="td-yellow">35.4148</td><td class="td-yellow">58.9148</td><td class="td-yellow">68.3345</td><td class="td-yellow">79.6829</td><td class="td-yellow">84.2034</td><td class="td-yellow">84.3237</td><td class="td-yellow">84.4966</td>
+    </tr>
+    <tr><td>After TSR Initiatives</td>
+    <td class="td-yellow">35.4148</td><td class="td-yellow">58.3476</td><td class="td-yellow">66.5037</td><td class="td-yellow">76.9243</td><td class="td-yellow">80.9473</td><td class="td-yellow">80.4494</td><td class="td-yellow">79.9659</td>
+    </tr>
+    <tr><td>After Electricity Initiatives</td>
+    <td class="td-blue">35.4148</td><td class="td-blue">55.9521</td><td class="td-blue">62.9474</td><td class="td-blue">71.3367</td><td class="td-blue">74.4883</td><td class="td-blue">73.3732</td><td class="td-blue">71.9297</td>
+    </tr>
+    <tr><td>Carbon Capture CCUS (Mio ton)</td>
+    <td class="td-blue">0.0000</td><td class="td-blue">0.0000</td><td class="td-blue">0.0000</td><td class="td-blue">1.4000</td><td class="td-blue">5.7000</td><td class="td-blue">17.1000</td><td class="td-blue">60.2927</td>
+    </tr>
+    <tr><td>After Carbon Capture</td>
+    <td class="td-blue">35.4148</td><td class="td-blue">55.9521</td><td class="td-blue">62.9474</td><td class="td-blue">69.9367</td><td class="td-blue">68.7883</td><td class="td-blue">56.2732</td><td class="td-blue">11.6370</td>
+    </tr>
+    <tr><td>Recarbonation (Mio ton)</td>
+    <td class="td-blue">3.7653</td><td class="td-blue">6.0376</td><td class="td-blue">6.8545</td><td class="td-blue">7.8654</td><td class="td-blue">8.2309</td><td class="td-blue">8.1473</td><td class="td-blue">8.0390</td>
+    </tr>
+    <tr><td>After Recarbonation</td>
+    <td class="td-blue">31.6495</td><td class="td-blue">49.9145</td><td class="td-blue">56.0929</td><td class="td-blue">62.0712</td><td class="td-blue">60.5574</td><td class="td-blue">48.1259</td><td class="td-blue">3.5979</td>
+    </tr>
+    <tr><td>Offset (Mio ton)</td>
+    <td class="td-yellow">0.0000</td><td class="td-yellow">0.0000</td><td class="td-yellow">0.0000</td><td class="td-yellow">0.0000</td><td class="td-yellow">0.0000</td><td class="td-yellow">0.0000</td><td class="td-yellow">3.5979</td>
+    </tr>
+    <tr><td>Remain CO₂</td>
+    <td class="td-green">31.6495</td><td class="td-green">49.9145</td><td class="td-green">56.0929</td><td class="td-green">62.0712</td><td class="td-green">60.5574</td><td class="td-green">48.1259</td><td class="td-green">0.0000</td>
+    </tr>
+    <tr><td>Total Reduction from Baseline</td>
+    <td class="td-green">3.7653</td><td class="td-green">20.5677</td><td class="td-green">26.2161</td><td class="td-green">37.7514</td><td class="td-green">47.8367</td><td class="td-green">62.0165</td><td class="td-green">113.8138</td>
+    </tr>
+    <tr><td>% Reduction from BAU</td>
+    <td class="td-green">0.00%</td><td class="td-green">29.18%</td><td class="td-green">31.85%</td><td class="td-green">37.82%</td><td class="td-green">44.13%</td><td class="td-green">56.31%</td><td class="td-green">100.00%</td>
+    </tr></tbody>
+    </table>
+  </div>
+
+  <div class="section-title-highlight">Initiatives Contribution to Net Zero 2050 (%)</div>
+  <div class="kpi-grid" id="kpi-contributions">
+    <div class="kpi-card">
+      <div class="kpi-label">STEC</div>
+      <div class="kpi-value kpi-yellow">3.76%</div>
+      <div class="kpi-unit">contribution to net zero 2050</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Clinker Factor (CF)</div>
+      <div class="kpi-value kpi-green">21.99%</div>
+      <div class="kpi-unit">contribution to net zero 2050</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">TSR</div>
+      <div class="kpi-value kpi-green">3.98%</div>
+      <div class="kpi-unit">contribution to net zero 2050</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Electricity Scope 2</div>
+      <div class="kpi-value kpi-blue">7.06%</div>
+      <div class="kpi-unit">contribution to net zero 2050</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">CCUS</div>
+      <div class="kpi-value kpi-red">52.97%</div>
+      <div class="kpi-unit">contribution to net zero 2050</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Recarbonation</div>
+      <div class="kpi-value kpi-blue">7.06%</div>
+      <div class="kpi-unit">contribution to net zero 2050</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Offset</div>
+      <div class="kpi-value kpi-yellow">3.16%</div>
+      <div class="kpi-unit">contribution to net zero 2050</div>
+    </div></div>
+</div>
+
+<!-- ===== ROADMAP TAB ===== -->
+<div id="tab-roadmap" class="page">
+  <div class="chart-card" style="padding:28px;">
+    <div class="chart-title" style="font-size:16px;">CO₂ Emissions Reduction Roadmap (Mio ton CO₂)</div>
+    <div class="chart-subtitle">Stacked area shows contribution of each initiative · Dashed line = BAU · Bottom area = Net Zero path</div>
+    <div style="position:relative;">
+      <canvas id="chartRoadmap" style="max-height: 520px; box-sizing: border-box; display: block; height: 520px; width: 1142px;" width="1713" height="780"></canvas>
+    </div>
+  </div>
+  <div class="chart-card" style="padding:28px;">
+    <div style="text-align:center;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#1e293b;margin-bottom:4px;">Percentage Contribution to Net Zero</div>
+    <div style="text-align:center;font-size:11px;color:#64748b;font-family:&#39;JetBrains Mono&#39;,monospace;margin-bottom:24px;">and CO₂ Emission Savings in 2050</div>
+    <div id="marimekko-chart" style="width:100%;"><div style="display:flex;gap:4px;align-items:stretch;width:100%;font-family:Syne,sans-serif;"><div style="flex:0 0 8.00%;display:flex;flex-direction:column;gap:0;"><div style="display:flex;flex-direction:column;gap:4px;"><div style="background:#E65100;border-radius:6px 6px 0 0;height:90px;display:flex;flex-direction:column;justify-content:flex-end;padding:8px;color:#fff;"><div style="font-size:16px;font-weight:800;line-height:1;">4%</div><div style="font-size:10px;margin-top:6px;opacity:0.85;font-family:JetBrains Mono,monospace;">4.28 Mio ton</div></div><div style="background:#388E3C;border-radius:0 0 6px 6px;height:86px;display:flex;flex-direction:column;justify-content:flex-end;padding:8px;color:#fff;"><div style="font-size:16px;font-weight:800;line-height:1;">4%</div><div style="font-size:10px;margin-top:6px;opacity:0.85;font-family:JetBrains Mono,monospace;">4.53 Mio ton</div></div></div><div style="margin-top:8px;"><div style="font-size:11px;font-weight:700;color:#E65100;margin-bottom:4px;">Savings in clinker production</div><div style="font-size:10px;color:#475569;padding-left:8px;">• Thermal efficiency (STEC)</div><div style="font-size:10px;color:#475569;padding-left:8px;">• Alternative &amp; biomass fuels (TSR)</div><div style="font-size:10px;color:#475569;padding-left:8px;">• Decarbonated raw materials</div></div></div><div style="flex:0 0 22.00%;display:flex;flex-direction:column;gap:0;"><div style="background:#F4A261;border-radius:6px;height:180px;display:flex;flex-direction:column;justify-content:flex-end;padding:10px;color:#fff;"><div style="font-size:20px;font-weight:800;line-height:1;">22%</div><div style="font-size:11px;margin-top:8px;opacity:0.85;font-family:JetBrains Mono,monospace;">25.03 Mio ton</div></div><div style="margin-top:8px;"><div style="font-size:11px;font-weight:700;color:#E8833A;margin-bottom:4px;">Savings in cement &amp; binders</div><div style="font-size:10px;color:#475569;padding-left:8px;">• Portland clinker substitution</div><div style="font-size:10px;color:#475569;padding-left:8px;">• Clinker-to-cement ratio</div><div style="font-size:10px;color:#475569;padding-left:8px;">• Alt. binders</div></div></div><div style="flex:0 0 14.00%;display:flex;flex-direction:column;gap:0;"><div style="display:flex;gap:4px;height:180px;"><div style="flex:0 0 50.0%;background:#29B6F6;border-radius:6px 0 0 6px;display:flex;flex-direction:column;justify-content:flex-end;padding:8px 6px;color:#fff;"><div style="font-size:16px;font-weight:800;line-height:1;">7%</div><div style="font-size:10px;margin-top:6px;opacity:0.85;font-family:JetBrains Mono,monospace;">8.04 Mio ton</div></div><div style="flex:0 0 50.0%;background:#0288D1;border-radius:0 6px 6px 0;display:flex;flex-direction:column;justify-content:flex-end;padding:8px 6px;color:#fff;"><div style="font-size:16px;font-weight:800;line-height:1;">7%</div><div style="font-size:10px;margin-top:6px;opacity:0.85;font-family:JetBrains Mono,monospace;">8.04 Mio ton</div></div></div><div style="display:flex;gap:4px;margin-top:8px;"><div style="flex:0 0 50.0%;padding-right:4px;"><div style="font-size:11px;font-weight:700;color:#29B6F6;margin-bottom:4px;">Decarbonisation of electricity</div><div style="font-size:10px;color:#475569;padding-left:8px;">• Grid decarbonisation</div><div style="font-size:10px;color:#475569;padding-left:8px;">• On-site solar (PLTS)</div></div><div style="flex:0 0 50.0%;padding-left:4px;"><div style="font-size:11px;font-weight:700;color:#0288D1;margin-bottom:4px;">CO₂ sink: recarbonation</div><div style="font-size:10px;color:#475569;padding-left:8px;">• Natural CO₂ uptake in concrete</div></div></div></div><div style="flex:0 0 53.00%;display:flex;flex-direction:column;gap:0;"><div style="background:#6A1B9A;border-radius:6px;height:180px;display:flex;flex-direction:column;justify-content:flex-end;padding:10px;color:#fff;"><div style="font-size:20px;font-weight:800;line-height:1;">53%</div><div style="font-size:11px;margin-top:8px;opacity:0.85;font-family:JetBrains Mono,monospace;">60.29 Mio ton</div></div><div style="margin-top:8px;"><div style="font-size:11px;font-weight:700;color:#7B1FA2;margin-bottom:4px;">Carbon capture &amp; storage (CCUS)</div><div style="font-size:10px;color:#475569;padding-left:8px;">• Carbon capture at cement plants</div><div style="font-size:10px;color:#475569;padding-left:8px;">• Storage &amp; utilisation</div></div></div><div style="flex:0 0 3.00%;display:flex;flex-direction:column;gap:0;"><div style="background:#F59E0B;border-radius:6px;height:180px;display:flex;flex-direction:column;justify-content:flex-end;padding:10px;color:#fff;"><div style="font-size:20px;font-weight:800;line-height:1;">3%</div><div style="font-size:11px;margin-top:8px;opacity:0.85;font-family:JetBrains Mono,monospace;">3.60 Mio ton</div></div><div style="margin-top:8px;"><div style="font-size:11px;font-weight:700;color:#D97706;margin-bottom:4px;">Offset</div><div style="font-size:10px;color:#475569;padding-left:8px;">• Remaining CO₂ offset</div><div style="font-size:10px;color:#475569;padding-left:8px;">• Net zero balance</div></div></div></div><div style="margin-top:20px;padding-top:14px;border-top:2px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;"><div style="font-size:13px;font-weight:800;color:#1e293b;text-transform:uppercase;letter-spacing:1px;">Total Reduction</div><div style="font-size:13px;font-weight:800;color:#1e293b;font-family:JetBrains Mono,monospace;">100% · 113.81 Mio ton CO₂ reduction</div></div></div>
+  </div>
+</div>
+
+<!-- ===== SPECIFIC EMISSION TAB ===== -->
+<div id="tab-specific" class="page">
+  <div class="chart-card">
+    <div class="chart-title">Specific Gross CO₂ — Scope 1 &amp; 2 Stacked (kg CO₂/ton cem eq)</div>
+    <div class="chart-subtitle">Scope 1 process+fuel | Scope 2 electricity</div>
+    <canvas id="chartSpecific" style="box-sizing: border-box; display: block; height: 380px; width: 1158px;" width="1737" height="570"></canvas>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title">Scope 1 vs Scope 2 Trend (kg CO₂/ton cem eq)</div>
+    <div class="chart-subtitle">Year-by-year trajectory of each scope</div>
+    <canvas id="chartScope12" style="box-sizing: border-box; display: block; height: 380px; width: 1158px;" width="1737" height="570"></canvas>
+  </div>
+</div>
+
+<!-- ===== WATERFALL TAB ===== -->
+<div id="tab-waterfall" class="page">
+  <div class="chart-card">
+    <div class="chart-title">CO₂ Emission Impact of Key Decarbonization Initiatives (Mio ton, Gross)</div>
+    <div class="chart-subtitle">Waterfall from 2010 baseline → Net Zero 2050 · Green = reduction · Red = increase · Blue = subtotal</div>
+    <canvas id="chartWaterfall" style="max-height: 460px; box-sizing: border-box; display: block; height: 460px; width: 1158px;" width="1737" height="690"></canvas>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title">Initiatives Contribution in 2050 (%)</div>
+    <div class="chart-subtitle">Share of each lever toward net zero target</div>
+    <canvas id="chartPie" style="box-sizing: border-box; display: block; height: 380px; width: 1158px;" width="1737" height="570"></canvas>
+  </div>
+  <div class="chart-card" style="overflow-x:auto;">
+    <div class="chart-title" style="margin-bottom:12px;">Waterfall Data Table (from Excel K73:L83)</div>
+    <table id="wf-table">
+      <thead><tr><th>#</th><th>Category</th><th>Value (Mio ton CO₂)</th><th>Type</th></tr></thead>
+      <tbody id="wf-tbody">
+    <tr>
+      <td style="color:var(--muted)">0</td>
+      <td>2010 Reff</td>
+      <td class="td-red">+35.4148</td>
+      <td><span style="color:#60a5fa">Baseline</span></td>
+    </tr>
+    <tr>
+      <td style="color:var(--muted)">1</td>
+      <td>Demand Increase</td>
+      <td class="td-red">+78.3990</td>
+      <td><span style="color:#f87171">Increase ▲</span></td>
+    </tr>
+    <tr>
+      <td style="color:var(--muted)">2</td>
+      <td>STEC Initiatives</td>
+      <td class="td-green">-4.2843</td>
+      <td><span style="color:#22d3a5">Reduction ▼</span></td>
+    </tr>
+    <tr>
+      <td style="color:var(--muted)">3</td>
+      <td>CF Initiatives</td>
+      <td class="td-green">-25.0329</td>
+      <td><span style="color:#22d3a5">Reduction ▼</span></td>
+    </tr>
+    <tr>
+      <td style="color:var(--muted)">4</td>
+      <td>TSR Initiatives</td>
+      <td class="td-green">-4.5307</td>
+      <td><span style="color:#22d3a5">Reduction ▼</span></td>
+    </tr>
+    <tr>
+      <td style="color:var(--muted)">5</td>
+      <td>Electricity (scope 2)</td>
+      <td class="td-green">-8.0362</td>
+      <td><span style="color:#22d3a5">Reduction ▼</span></td>
+    </tr>
+    <tr>
+      <td style="color:var(--muted)">6</td>
+      <td>Remaining</td>
+      <td class="td-red">+71.9297</td>
+      <td><span style="color:#60a5fa">Subtotal</span></td>
+    </tr>
+    <tr>
+      <td style="color:var(--muted)">7</td>
+      <td>CCUS Initiatives</td>
+      <td class="td-green">-60.2927</td>
+      <td><span style="color:#22d3a5">Reduction ▼</span></td>
+    </tr>
+    <tr>
+      <td style="color:var(--muted)">8</td>
+      <td>Recarbonation</td>
+      <td class="td-green">-8.0390</td>
+      <td><span style="color:#22d3a5">Reduction ▼</span></td>
+    </tr>
+    <tr>
+      <td style="color:var(--muted)">9</td>
+      <td>Offset</td>
+      <td class="td-green">-3.5979</td>
+      <td><span style="color:#22d3a5">Reduction ▼</span></td>
+    </tr>
+    <tr>
+      <td style="color:var(--muted)">10</td>
+      <td>Net Zero 2050</td>
+      <td class="td-red">+0.0000</td>
+      <td><span style="color:#22d3a5">Final</span></td>
+    </tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== TUTORIAL TAB ===== -->
+<div id="tab-tutorial" class="page">
+  <style>
+    .tut-hero{background:linear-gradient(135deg,#1e3a5f 0%,#1d4ed8 100%);border-radius:16px;padding:32px;margin-bottom:24px;color:#fff;display:flex;align-items:center;gap:24px;}
+    .tut-hero-icon{font-size:52px;flex-shrink:0;}
+    .tut-hero h2{font-size:24px;font-weight:800;margin-bottom:6px;}
+    .tut-hero p{font-size:13px;color:#bfdbfe;font-family:'JetBrains Mono',monospace;}
+    .tut-section{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:24px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,0.04);}
+    .tut-section h3{font-size:16px;font-weight:800;color:#1e293b;margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+    .tut-badge{background:#1d4ed8;color:#fff;border-radius:20px;padding:3px 12px;font-size:11px;font-family:'JetBrains Mono',monospace;}
+    .tut-badge-yellow{background:#d97706;}
+    .tut-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+    .tut-zone{border-radius:12px;padding:20px;}
+    .tut-zone-yellow{background:#fefce8;border:2px solid #fcd34d;}
+    .tut-zone-blue{background:#eff6ff;border:2px solid #93c5fd;}
+    .tut-zone h4{font-size:13px;font-weight:700;margin-bottom:12px;}
+    .tut-zone-yellow h4{color:#92400e;}
+    .tut-zone-blue h4{color:#1d4ed8;}
+    .tut-zone p{font-size:12px;color:#475569;line-height:1.6;}
+    .tut-table{width:100%;border-collapse:collapse;font-size:12px;}
+    .tut-table th{background:#f1f5f9;padding:10px 14px;text-align:left;font-weight:700;color:#475569;border-bottom:2px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;}
+    .tut-table td{padding:10px 14px;border-bottom:1px solid #e2e8f0;color:#334155;vertical-align:top;}
+    .tut-table tr:last-child td{border-bottom:none;}
+    .tut-table td:first-child{font-weight:700;color:#1d4ed8;font-family:'JetBrains Mono',monospace;white-space:nowrap;}
+    .tut-benefit{display:flex;gap:14px;align-items:flex-start;padding:14px;background:#f8fafc;border-radius:10px;margin-bottom:10px;}
+    .tut-benefit-num{background:#1d4ed8;color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;}
+    .tut-benefit p{font-size:13px;color:#334155;line-height:1.6;margin:0;}
+    .tut-benefit ul{font-size:12px;color:#475569;margin:6px 0 0 16px;line-height:1.8;}
+    .tut-feedback{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+    .tut-feedback-step{background:#f8fafc;border-radius:12px;padding:18px;text-align:center;border:1.5px solid var(--border);}
+    .tut-feedback-step .step-num{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;margin:0 auto 12px;}
+    .tut-feedback-step:nth-child(1) .step-num{background:#fef3c7;color:#d97706;}
+    .tut-feedback-step:nth-child(2) .step-num{background:#dbeafe;color:#1d4ed8;}
+    .tut-feedback-step:nth-child(3) .step-num{background:#f1f5f9;color:#334155;}
+    .tut-feedback-step h4{font-size:13px;font-weight:700;margin-bottom:8px;color:#1e293b;}
+    .tut-feedback-step p{font-size:12px;color:#64748b;line-height:1.6;}
+    .tut-contact{background:linear-gradient(135deg,#f0fdf4 0%,#dcfce7 100%);border:1.5px solid #86efac;border-radius:14px;padding:24px;text-align:center;}
+    .tut-contact p{font-size:13px;color:#166534;margin-bottom:8px;}
+    .tut-contact a{color:#15803d;font-weight:700;font-family:'JetBrains Mono',monospace;text-decoration:none;border-bottom:2px solid #86efac;}
+    .tut-contact a:hover{border-bottom-color:#166534;}
+    .tut-link{background:#eff6ff;border:1.5px solid #93c5fd;border-radius:10px;padding:14px 18px;display:flex;align-items:center;gap:12px;margin-top:10px;}
+    .tut-link a{font-size:12px;color:#1d4ed8;font-family:'JetBrains Mono',monospace;text-decoration:none;word-break:break-all;}
+    .tut-link a:hover{text-decoration:underline;}
+    @media(max-width:768px){.tut-grid,.tut-feedback{grid-template-columns:1fr;}.tut-hero{flex-direction:column;}}
+  </style>
+
+  <!-- Hero -->
+  <div class="tut-hero">
+    <div class="tut-hero-icon">🏭</div>
+    <div>
+      <h2>Tutorial Penggunaan Tools Simulasi<br>Cement CO₂ Roadmap — Net Zero 2050 (Scope 1 &amp; 2)</h2>
+      <p>Panduan visual pengisian variabel dan analisis proyeksi emisi untuk industri semen.</p>
+    </div>
+  </div>
+
+  <!-- Overview -->
+  <div class="tut-section">
+    <h3>🌐 Tentang Tools Ini</h3>
+    <p style="font-size:13px;color:#475569;line-height:1.8;margin-bottom:16px;">
+      Tools ini dirancang khusus untuk membangun kerangka kerja (<em>framework</em>) peta jalan Net Zero bagi industri semen hingga tahun 2050.
+      Model ini bersifat <strong>dinamis</strong> — seluruh hasil dan grafik akan dikalkulasi ulang setiap kali Anda mengubah variabel input.
+    </p>
+    <div class="tut-grid">
+      <div class="tut-zone tut-zone-yellow">
+        <h4>🖥️ Platform Optimal</h4>
+        <p>Best viewed on a <strong>desktop computer</strong> untuk pengalaman terbaik dalam membaca tabel dan grafik.</p>
+      </div>
+      <div class="tut-zone tut-zone-blue">
+        <h4>⚡ Respons Real-Time</h4>
+        <p>Kalkulasi berjalan <strong>instan</strong> tanpa perlu memuat ulang halaman (<em>refresh</em>). Setiap perubahan input langsung terlihat dampaknya.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Manfaat -->
+  <div class="tut-section">
+    <h3>✅ Manfaat Tools Simulator</h3>
+    <div class="tut-benefit">
+      <div class="tut-benefit-num">1</div>
+      <p>Membantu industri semen dalam menyusun kerangka peta jalan <strong>Net Zero 2050</strong> serta indikator pencapaian kuncinya (KPI).</p>
+    </div>
+    <div class="tut-benefit">
+      <div class="tut-benefit-num">2</div>
+      <div>
+        <p>Memperkirakan dampak penurunan emisi karbon <strong>Scope 1 &amp; 2</strong> dengan berbagai inisiatif skenario:</p>
+        <ul>
+          <li>Pengurangan Faktor Klinker</li>
+          <li>Pengurangan Faktor Kalsinasi</li>
+          <li>Penggunaan bahan bakar alternatif rendah karbon (biomassa &amp; alt. fossil fuel)</li>
+          <li>Pengurangan konsumsi energi panas spesifik (STEC)</li>
+          <li>Pengurangan konsumsi energi listrik spesifik (SEEC)</li>
+          <li>Penggunaan energi listrik terbarukan dari PLTS</li>
+          <li>Pembangkitan listrik dari sisa gas panas terbuang (WHRPG)</li>
+        </ul>
+      </div>
+    </div>
+    <div class="tut-benefit">
+      <div class="tut-benefit-num">3</div>
+      <p>Memperkirakan <strong>residual emisi karbon</strong> pada tahun 2050 yang harus diserap melalui teknologi CCUS dan kompensasi melalui pembelian carbon offset.</p>
+    </div>
+  </div>
+
+  <!-- Zona Warna -->
+  <div class="tut-section">
+    <h3>🎨 Penjelasan Zona Warna pada Simulator</h3>
+    <div class="tut-grid">
+      <div class="tut-zone tut-zone-yellow">
+        <h4>🟡 ZONA KUNING — Area Input Variabel</h4>
+        <p>Seluruh data mentah dan variabel skenario operasional Anda <strong>hanya dimasukkan</strong> ke dalam kolom berwarna kuning. Ubah angka di sini untuk mensimulasikan skenario berbeda.</p>
+      </div>
+      <div class="tut-zone tut-zone-blue">
+        <h4>🔵 ZONA BIRU &amp; PUTIH — Hasil Kalkulasi</h4>
+        <p>Menampilkan hasil kalkulasi otomatis: emisi Scope 1 &amp; 2, kontribusi setiap inisiatif, kebutuhan CCUS dan Offset setelah semua inisiatif kunci dijalankan. <strong>Jangan diubah secara manual.</strong></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Parameter Input -->
+  <div class="tut-section">
+    <h3>📋 Panduan Parameter <span class="tut-badge tut-badge-yellow">INPUT</span></h3>
+    <table class="tut-table">
+      <thead><tr><th>Parameter</th><th>Keterangan</th></tr></thead>
+      <tbody>
+        <tr><td>CF (%)</td><td>Rasio Clinker dalam semen (%)</td></tr>
+        <tr><td>Clinker Production</td><td>Produksi Clinker (Ton)</td></tr>
+        <tr><td>TSR Biomass</td><td>Thermal Substitution Rate dari biomass: Sekam, Saw Dust, Organic waste, Kayu, Limbah pertanian, dll. (%)</td></tr>
+        <tr><td>TSR Alt Fosil</td><td>Thermal Substitution Rate dari limbah industri: Plastik, Sludge, Solvent, dll. (%)</td></tr>
+        <tr><td>STEC</td><td>Specific Thermal Energy Consumption (MJ/ton Clinker)</td></tr>
+        <tr><td>Calcination Factor</td><td>Faktor kalsinasi — detail perhitungan mengacu pada form GCCA CO₂ Protocol</td></tr>
+        <tr><td>PLN Grid</td><td>Faktor emisi listrik dari PLN Gatrik. Periode 2025–2050 adalah estimasi (Ton CO₂/MWh)</td></tr>
+        <tr><td>Installed PLTS</td><td>Proyeksi instalasi Panel Surya (MWp)</td></tr>
+        <tr><td>Waste Heat Recovery</td><td>Proyeksi listrik yang dihasilkan dari Waste Heat Recovery Power Generation (MWh)</td></tr>
+        <tr><td>CCUS</td><td>Carbon Capture 2035–2045 diisi manual. <strong>Tahun 2050 dikalkulasi otomatis.</strong> Asumsi: untuk mencapai NZ 2050, CCUS harus dioptimalkan sebelum upaya terakhir yaitu Offset (Ton)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Parameter Output -->
+  <div class="tut-section">
+    <h3>📊 Panduan Parameter <span class="tut-badge">OUTPUT</span></h3>
+    <p style="font-size:12px;color:#dc2626;font-weight:600;margin-bottom:12px;">⚠️ Semua emisi spesifik adalah SEBELUM Rekarbonasi, CCUS, dan Offset.</p>
+    <table class="tut-table">
+      <thead><tr><th>Parameter</th><th>Keterangan</th></tr></thead>
+      <tbody>
+        <tr><td>Specific CO₂ Scope 2</td><td>Emisi spesifik tidak langsung dari listrik (kg CO₂/ton cem eq)</td></tr>
+        <tr><td>Specific Gross CO₂ Scope 1</td><td>Emisi spesifik langsung dari kalsinasi dan bahan bakar (kg CO₂/ton cem eq)</td></tr>
+        <tr><td>Specific Net CO₂ Scope 1</td><td>Emisi spesifik direct dari kalsinasi &amp; bahan bakar — semua bahan bakar alternatif dianggap netral (kg CO₂/ton cem eq)</td></tr>
+        <tr><td>Total Specific Gross CO₂</td><td>Penjumlahan emisi spesifik Scope 1 Gross dan Scope 2 (kg CO₂/ton cem eq)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Navigasi Grafik -->
+  <div class="tut-section">
+    <h3>📈 Navigasi Tab Grafik</h3>
+    <table class="tut-table">
+      <thead><tr><th>Tab</th><th>Isi &amp; Fungsi</th></tr></thead>
+      <tbody>
+        <tr><td>⚙️ Input Scope 1 &amp; 2</td><td>Area utama pengisian variabel (Zona Kuning) dan tampilan hasil kalkulasi (Zona Biru). Juga menampilkan tabel kontribusi setiap inisiatif per tahun dan % pengurangan emisi dari BAU.</td></tr>
+        <tr><td>📈 Graph Roadmap</td><td>Grafik <em>stacked area</em> yang menunjukkan trajektori CO₂ (Mio ton) dari baseline 2010 hingga Net Zero 2050. Garis putus-putus = BAU; area bawah = jalur Net Zero.</td></tr>
+        <tr><td>📊 Graph Specific Emission</td><td>Grafik batang yang menampilkan emisi spesifik Scope 1 Gross dan Scope 2 (kg CO₂/ton cem eq) sebelum CCUS, Rekarbonasi, dan Offset.</td></tr>
+        <tr><td>🌊 Waterfall Graph</td><td>Grafik waterfall yang memvisualisasikan dampak setiap inisiatif terhadap penurunan emisi dari baseline 2010 ke Net Zero 2050. Disertai pie chart kontribusi masing-masing lever.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Feedback Loop -->
+  <div class="tut-section">
+    <h3>🔄 Siklus Evaluasi Strategi Net Zero (Feedback Loop)</h3>
+    <div class="tut-feedback">
+      <div class="tut-feedback-step">
+        <div class="step-num">1</div>
+        <h4>Input Skenario</h4>
+        <p>Masukkan intervensi teknologi/kebijakan baru ke dalam variabel <strong>Zona Kuning</strong>.</p>
+      </div>
+      <div class="tut-feedback-step">
+        <div class="step-num">2</div>
+        <h4>Evaluasi Dampak</h4>
+        <p>Lihat seberapa besar penurunan emisi yang dihasilkan melalui <strong>Zona Biru dan Grafik</strong> secara real-time.</p>
+      </div>
+      <div class="tut-feedback-step">
+        <div class="step-num">3</div>
+        <h4>Sesuaikan Strategi</h4>
+        <p>Minimalisasi kebutuhan CCUS dan Offset. Benchmark dengan roadmap negara lain, lalu tingkatkan agresivitas variabel inisiatif kunci. Kembali ke Langkah 1.</p>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Kesimpulan & Rekomendasi -->
+  <div class="tut-section">
+    <h3>📋 Kesimpulan &amp; Rekomendasi</h3>
+
+    <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#3b82f6;margin:0 0 10px;">Kesimpulan</p>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:24px;">
+      <tbody>
+        <tr style="border-bottom:1px solid #e2e8f0;">
+          <td style="width:28px;padding:10px 12px 10px 0;vertical-align:top;color:#3b82f6;font-size:15px;">▸</td>
+          <td style="padding:10px 0;font-size:13px;color:#334155;line-height:1.7;">Model simulasi dinamis membantu industri semen merancang peta jalan net zero.</td>
+        </tr>
+        <tr style="border-bottom:1px solid #e2e8f0;">
+          <td style="padding:10px 12px 10px 0;vertical-align:top;color:#3b82f6;font-size:15px;">▸</td>
+          <td style="padding:10px 0;font-size:13px;color:#334155;line-height:1.7;">Emisi Scope 1 (proses + bahan bakar) mendominasi — perlu kombinasi <strong>CF + TSR + STEC</strong>.</td>
+        </tr>
+        <tr style="border-bottom:1px solid #e2e8f0;">
+          <td style="padding:10px 12px 10px 0;vertical-align:top;color:#f97316;font-size:15px;">▸</td>
+          <td style="padding:10px 0;font-size:13px;color:#334155;line-height:1.7;"><strong>CCUS menjadi faktor kunci</strong> untuk mencapai NZ 2050.</td>
+        </tr>
+        <tr style="border-bottom:1px solid #e2e8f0;">
+          <td style="padding:10px 12px 10px 0;vertical-align:top;color:#3b82f6;font-size:15px;">▸</td>
+          <td style="padding:10px 0;font-size:13px;color:#334155;line-height:1.7;">Elektrifikasi dan recarbonation memberikan kontribusi tambahan yang signifikan.</td>
+        </tr>
+        <tr>
+          <td style="padding:10px 12px 10px 0;vertical-align:top;color:#3b82f6;font-size:15px;">▸</td>
+          <td style="padding:10px 0;font-size:13px;color:#334155;line-height:1.7;">Pada skenario NZ 2050, CCUS memang dominan — namun inisiatif hulu seperti <strong>clinker factor, TSR, dan elektrifikasi</strong> tetap krusial untuk mengurangi beban CCUS.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#f97316;margin:0 0 10px;">Rekomendasi</p>
+    <table style="width:100%;border-collapse:collapse;">
+      <tbody>
+        <tr style="border-bottom:1px solid #e2e8f0;">
+          <td style="width:28px;padding:10px 12px 10px 0;vertical-align:top;font-size:12px;font-weight:800;color:#fff;text-align:center;">
+            <span style="background:#22c55e;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;">1</span>
+          </td>
+          <td style="padding:10px 0;font-size:13px;color:#334155;line-height:1.7;">Prioritaskan penurunan <strong>clinker factor</strong> (substitusi SCM).</td>
+        </tr>
+        <tr style="border-bottom:1px solid #e2e8f0;">
+          <td style="padding:10px 12px 10px 0;vertical-align:top;font-size:12px;font-weight:800;color:#fff;text-align:center;">
+            <span style="background:#22c55e;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;">2</span>
+          </td>
+          <td style="padding:10px 0;font-size:13px;color:#334155;line-height:1.7;">Tingkatkan <strong>TSR biomassa &amp; limbah</strong> secara agresif.</td>
+        </tr>
+        <tr style="border-bottom:1px solid #e2e8f0;">
+          <td style="padding:10px 12px 10px 0;vertical-align:top;font-size:12px;font-weight:800;color:#fff;text-align:center;">
+            <span style="background:#22c55e;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;">3</span>
+          </td>
+          <td style="padding:10px 0;font-size:13px;color:#334155;line-height:1.7;">Investasi pada <strong>PLTS &amp; WHR</strong> untuk menekan Scope 2.</td>
+        </tr>
+        <tr style="border-bottom:1px solid #e2e8f0;">
+          <td style="padding:10px 12px 10px 0;vertical-align:top;font-size:12px;font-weight:800;color:#fff;text-align:center;">
+            <span style="background:#f97316;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;">4</span>
+          </td>
+          <td style="padding:10px 0;font-size:13px;color:#334155;line-height:1.7;">Persiapkan proyek <strong>CCUS mulai 2035</strong>.</td>
+        </tr>
+        <tr>
+          <td style="padding:10px 12px 10px 0;vertical-align:top;font-size:12px;font-weight:800;color:#fff;text-align:center;">
+            <span style="background:#94a3b8;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;">5</span>
+          </td>
+          <td style="padding:10px 0;font-size:13px;color:#334155;line-height:1.7;"><strong>Offset</strong> hanya sebagai opsi terakhir.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Kontak -->
+  <div class="tut-contact">
+    <p style="font-size:15px;font-weight:700;color:#14532d;margin-bottom:4px;">📬 Dukungan Teknis &amp; Penyesuaian Lanjutan</p>
+    <p>Tools simulasi ini dirancang sebagai kerangka kerja awal. Untuk pertanyaan lebih lanjut, hubungi:</p>
+    <a href="mailto:oepoyoprakoso@gmail.com">oepoyoprakoso@gmail.com</a>
+    <div class="tut-link" style="max-width:520px;margin:16px auto 0;">
+      <span style="font-size:18px;">🔗</span>
+      <div>
+        <div style="font-size:11px;color:#64748b;margin-bottom:2px;">Link Simulator Net Zero Roadmap Cement</div>
+        <a href="https://oepoyoprakoso-wq.github.io/Net-Zero-Roadmap/" target="_blank">https://oepoyoprakoso-wq.github.io/Net-Zero-Roadmap/</a>
+      </div>
+    </div>
+    <p style="margin-top:20px;font-size:14px;font-weight:700;color:#166534;">Selamat melakukan simulasi! 🚀</p>
+  </div>
+</div>
+
+<script>
+// ============================
+// CONSTANTS from Raw Data sheet
+// ============================
+const YEARS  = [2010,2025,2030,2035,2040,2045,2050];
+const CO2_TRAD = 95.8;
+const CO2_ALT  = 80.94411631556726;
+
+// ============================
+// DEFAULT INPUTS
+// ============================
+let inp = {
+  cf:   [81.5, 69.339069828671938, 67.4, 65, 63, 62, 60],
+  clk:  [6231309, 8640880.651539966, 8867861.072931599, 9311254, 10190471.5, 10190471.5, 10190471.5],
+  tsrb: [5.9513443725771404, 6.599252201621322, 14, 16, 20, 24, 28],
+  tsraf:[2.8571357710862699, 8.473714963245671, 21, 24, 30, 36, 42],
+  stec: [3367, 3367, 3385, 3380, 3375, 3365, 3330],
+  calc: [531, 530, 530, 530, 530, 530, 530],
+  seec: [116.8, 88.7, 77.3, 72.7, 72.9, 70.6, 65.4],
+  pln:  [0.89, 0.87, 0.8, 0.7, 0.66, 0.63, 0.6],
+  plts: [0, 6, 10, 15, 20, 25, 30],
+  whr:  [0, 0, 0, 0, 0, 0, 0],
+  ccus: [0, 0, 0, 0.2, 1, 3, 0] // idx6 auto
+};
+
+// ============================
+// CALCULATION ENGINE
+// Exact Excel formulas reproduced
+// ============================
+function calc() {
+  // cemEq = clk / (cf/100)
+  const cemEq = inp.cf.map((cf,i) => inp.clk[i] / (cf/100));
+
+  // TSR Traditional = 100 - tsrb - tsraf
+  const tsrTrad = inp.tsrb.map((b,i) => 100 - b - inp.tsraf[i]);
+
+  // === Raw Data formulas ===
+  // CO2 Process (ton) = clk * calcFactor / 1000
+  const co2Proc = inp.clk.map((clk,i) => clk * inp.calc[i] / 1000);
+
+  // CO2 traditional fuel = (tsrTrad/100 * stec * clk) * co2FactorTrad / 1e6
+  const co2FuelTrad = tsrTrad.map((tsr,i) =>
+    (tsr/100 * inp.stec[i] * inp.clk[i]) * CO2_TRAD / 1e6);
+
+  // CO2 alternative fossil fuel = (tsraf/100 * stec * clk) * co2FactorAlt / 1e6
+  const co2FuelAlt = inp.tsraf.map((tsr,i) =>
+    (tsr/100 * inp.stec[i] * inp.clk[i]) * CO2_ALT / 1e6);
+
+  // CO2 fuel total
+  const co2Fuel = co2FuelTrad.map((v,i) => v + co2FuelAlt[i]);
+
+  // CO2 IDO transport & drying = 1.2/100 * co2Fuel
+  const co2IDO = co2Fuel.map(v => 1.2/100 * v);
+
+  // CO2 organic = 1.55 * clk * 0.2/100 * 3.664
+  const co2Org = inp.clk.map(clk => 1.55 * clk * 0.2/100 * 3.664);
+
+  // CO2 absolute Gross = fuel + process + IDO + organic
+  const co2Gross = co2Proc.map((v,i) => v + co2Fuel[i] + co2IDO[i] + co2Org[i]);
+
+  // CO2 absolute Net = Gross - altFuelCO2 (biomass subtracted)
+  const co2Net = co2Gross.map((v,i) => v - co2FuelAlt[i]);
+
+  // Scope 1 specific gross (kg CO2/ton cem eq)
+  const s1Gross = co2Gross.map((v,i) => v / cemEq[i] * 1000);
+
+  // Scope 1 specific net
+  const s1Net = co2Net.map((v,i) => v / cemEq[i] * 1000);
+
+  // Scope 2 = (((seec*pln*cemEq)/1000 - (plts*3.5*330*pln) - (whr*pln)) / cemEq) * 1000
+  const s2 = inp.seec.map((seec,i) => {
+    const pln = inp.pln[i], plts = inp.plts[i], whr = inp.whr[i], cem = cemEq[i];
+    return (((seec * pln * cem)/1000 - (plts*3.5*330*pln) - (whr*pln)) / cem) * 1000;
+  });
+
+  // Total Gross = s1Gross + s2
+  const totGross = s1Gross.map((v,i) => v + s2[i]);
+
+  // =============================
+  // ABSOLUTE ROADMAP (Mio ton)
+  // =============================
+  // BAU = D23 * cemEq / 1e9 (2010 specific × future cement)
+  const bau = cemEq.map(c => totGross[0] * c / 1e9);
+
+  // Helper: build scenario scope1Gross with custom CF/TSR/STEC settings
+  function buildS1Gross(cfArr, tsrbArr, tsrafArr, stecArr, clkArr, calcArr) {
+    return clkArr.map((clk,i) => {
+      const cf   = cfArr[i];
+      const cem  = clk / (cf/100);
+      const trad = 100 - tsrbArr[i] - tsrafArr[i];
+      const tf   = (trad/100 * stecArr[i] * clk) * CO2_TRAD / 1e6;
+      const af   = (tsrafArr[i]/100 * stecArr[i] * clk) * CO2_ALT / 1e6;
+      const fuel = tf + af;
+      const proc = clk * calcArr[i] / 1000;
+      const ido  = 1.2/100 * fuel;
+      const org  = 1.55 * clk * 0.2/100 * 3.664;
+      const gross = proc + fuel + ido + org;
+      return gross / cem * 1000;
+    });
+  }
+
+  // After STEC: 2010 CF + 2010 TSR, actual STEC + actual scope2(2010)
+  const ones0 = inp.cf.map(() => inp.cf[0]);
+  const tsrb0 = inp.cf.map(() => inp.tsrb[0]);
+  const tsraf0= inp.cf.map(() => inp.tsraf[0]);
+  const s1_stec = buildS1Gross(ones0, tsrb0, tsraf0, inp.stec, inp.clk, inp.calc);
+  const afterSTEC = s1_stec.map((s1,i) => (s1 + s2[0]) * cemEq[i] / 1e9);
+
+  // After CF: actual CF, 2010 TSR, actual STEC
+  const s1_cf = buildS1Gross(inp.cf, tsrb0, tsraf0, inp.stec, inp.clk, inp.calc);
+  const afterCF = s1_cf.map((s1,i) => (s1 + s2[0]) * cemEq[i] / 1e9);
+
+  // After TSR: actual CF + TSR + STEC, but scope2 still at 2010
+  const afterTSR = s1Gross.map((s1,i) => (s1 + s2[0]) * cemEq[i] / 1e9);
+
+  // After Electricity: full scope1Gross + actual scope2
+  const afterElec = totGross.map((v,i) => v * cemEq[i] / 1e9);
+
+  // CCUS 2050 auto = 90% * s1Gross[6] * cemEq[6] / 1e9  (formula J30)
+  let ccusAbs = [...inp.ccus];
+  ccusAbs[6] = 0.9 * s1Gross[6] * cemEq[6] / 1e9;
+
+  // Recarbonation = 60% * 20% * s1Gross * cemEq / 1e9
+  const recarbAbs = s1Gross.map((s1,i) => 0.6 * 0.2 * s1 * cemEq[i] / 1e9);
+
+  // After CCUS
+  const afterCCUS = afterElec.map((v,i) => v - ccusAbs[i]);
+
+  // After Recarbonation
+  const afterRecarb = afterCCUS.map((v,i) => v - recarbAbs[i]);
+
+  // Offset (2050 = afterRecarb[6], others 0)
+  const offset = afterRecarb.map((v,i) => i === 6 ? v : 0);
+
+  // Remain = afterRecarb - offset  → 2050 = 0
+  const remain = afterRecarb.map((v,i) => Math.max(0, v - offset[i]));
+
+  // Total reduction & %
+  const totRed  = bau.map((v,i) => v - remain[i]);
+  const pctRed  = bau.map((v,i) => i===0 ? 0 : (v - remain[i]) / v * 100);
+
+  // === Waterfall (K73:L83 exact formulas) ===
+  // L73 = D25 = bau[0]
+  // L74 = J25 - D25 = bau[6] - bau[0]
+  // L75 = J26 - J25 = afterSTEC[6] - bau[6]
+  // L76 = J27 - J26 = afterCF[6]   - afterSTEC[6]
+  // L77 = J28 - J27 = afterTSR[6]  - afterCF[6]
+  // L78 = J29 - J28 = afterElec[6] - afterTSR[6]
+  // L79 = J29        = afterElec[6]          ← SUBTOTAL (idx 6)
+  // L80 = -J30       = -ccusAbs[6]
+  // L81 = -J31       = -recarbAbs[6]
+  // L82 = -J34       = -offset[6]
+  // L83 = J35        = remain[6]
+  const wfVals = [
+    bau[0],
+    bau[6] - bau[0],
+    afterSTEC[6]  - bau[6],
+    afterCF[6]    - afterSTEC[6],
+    afterTSR[6]   - afterCF[6],
+    afterElec[6]  - afterTSR[6],
+    afterElec[6],                   // Remaining — SUBTOTAL (idx 6)
+    -ccusAbs[6],
+    -recarbAbs[6],
+    -offset[6],
+    remain[6]
+  ];
+  const wfLabels = [
+    '2010 Reff','Demand Increase','STEC Initiatives','CF Initiatives',
+    'TSR Initiatives','Electricity (scope 2)','Remaining',
+    'CCUS Initiatives','Recarbonation','Offset','Net Zero 2050'
+  ];
+  const wfSubtotalIdx = new Set([6, 10]); // "Remaining" and "Net Zero 2050"
+  const wfStartIdx = new Set([0]);         // "2010 Reff" starts at 0
+
+  // Contributions 2050 (%)
+  const B6 = bau[6];
+  const contSTEC  = (afterSTEC[6]  - bau[6])      / B6 * 100;
+  const contCF    = (afterCF[6]    - afterSTEC[6]) / B6 * 100;
+  const contTSR   = (afterTSR[6]   - afterCF[6])   / B6 * 100;
+  const contElec  = (afterElec[6]  - afterTSR[6])  / B6 * 100;
+  const contCCUS  = -ccusAbs[6]    / B6 * 100;
+  const contRecarb= -recarbAbs[6]  / B6 * 100;
+  const contOffset= -offset[6]     / B6 * 100;
+
+  return {
+    cemEq, tsrTrad, s1Gross, s1Net, s2, totGross,
+    bau, afterSTEC, afterCF, afterTSR, afterElec,
+    afterCCUS, afterRecarb, remain, ccusAbs, recarbAbs, offset,
+    totRed, pctRed,
+    wfVals, wfLabels, wfSubtotalIdx, wfStartIdx,
+    contSTEC, contCF, contTSR, contElec, contCCUS, contRecarb, contOffset
+  };
+}
+
+// ============================
+// BUILD INPUT FIELDS
+// ============================
+const inputDefs = [
+  {id:'inp-cf',  key:'cf',   dp:3},
+  {id:'inp-clk', key:'clk',  dp:0},
+  {id:'inp-tsrb',key:'tsrb', dp:3},
+  {id:'inp-tsraf',key:'tsraf',dp:3},
+  {id:'inp-stec',key:'stec', dp:0},
+  {id:'inp-calc',key:'calc', dp:0},
+  {id:'inp-seec',key:'seec', dp:1},
+  {id:'inp-pln', key:'pln',  dp:3},
+  {id:'inp-plts',key:'plts', dp:0},
+  {id:'inp-whr', key:'whr',  dp:0},
+];
+
+function buildInputs() {
+  inputDefs.forEach(def => {
+    const el = document.getElementById(def.id);
+    if (!el) return;
+    el.innerHTML = '';
+    YEARS.forEach((yr, i) => {
+      const col = document.createElement('div');
+      col.className = 'year-col';
+      col.innerHTML = `<span class="year-label">${yr}</span>`;
+      const input = document.createElement('input');
+      input.type='number'; input.step='any';
+      input.value = +inp[def.key][i].toFixed(def.dp);
+      input.dataset.key = def.key; input.dataset.idx = i;
+      input.addEventListener('change', e => {
+        inp[e.target.dataset.key][+e.target.dataset.idx] = parseFloat(e.target.value)||0;
+        updateAll();
+      });
+      col.appendChild(input);
+      el.appendChild(col);
+    });
+  });
+
+  // CCUS: only 2035(idx3), 2040(idx4), 2045(idx5) editable; rest locked
+  const ccusEl = document.getElementById('inp-ccus');
+  ccusEl.innerHTML = '';
+  YEARS.forEach((yr, i) => {
+    const col = document.createElement('div');
+    col.className = 'year-col';
+    col.innerHTML = `<span class="year-label">${yr}</span>`;
+    if (i >= 3 && i <= 5) {
+      // Editable input
+      const input = document.createElement('input');
+      input.type='number'; input.step='any';
+      input.value = inp.ccus[i];
+      input.dataset.key = 'ccus'; input.dataset.idx = i;
+      input.addEventListener('change', e => {
+        inp.ccus[+e.target.dataset.idx] = parseFloat(e.target.value)||0;
+        updateAll();
+      });
+      col.appendChild(input);
+    } else if (i === 6) {
+      // 2050 auto-calculated — display as blue result span
+      const span = document.createElement('span');
+      span.id = 'ccus-2050-val';
+      span.style.cssText = 'background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.3);color:#93c5fd;border-radius:6px;padding:5px 4px;text-align:center;font-size:11px;font-family:JetBrains Mono,monospace;display:block;width:100%;';
+      span.textContent = '—';
+      col.appendChild(span);
+    } else {
+      // 2010/2025/2030 locked at 0
+      const input = document.createElement('input');
+      input.type='number'; input.value='0'; input.disabled = true;
+      col.appendChild(input);
+    }
+    ccusEl.appendChild(col);
+  });
+}
+
+// ============================
+// RENDER RESULTS
+// ============================
+function fmtSpan(v, dp) {
+  return `<span>${isNaN(v)?'—':v.toFixed(dp)}</span>`;
+}
+
+function renderResultRow(id, arr, dp) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = '';
+  YEARS.forEach((yr, i) => {
+    const col = document.createElement('div');
+    col.className = 'year-col';
+    col.innerHTML = `<span class="year-label">${yr}</span>` + fmtSpan(arr[i], dp);
+    el.appendChild(col);
+  });
+}
+
+function renderResults(r) {
+  // Update CCUS 2050 auto value
+  const ccus2050span = document.getElementById('ccus-2050-val');
+  if (ccus2050span) ccus2050span.textContent = r.ccusAbs[6].toFixed(4);
+
+  renderResultRow('res-cemEq',  r.cemEq,   0);
+  renderResultRow('res-tsrtrad',r.tsrTrad, 2);
+  renderResultRow('res-scope2', r.s2,      2);
+  renderResultRow('res-scope1g',r.s1Gross, 2);
+  renderResultRow('res-scope1n',r.s1Net,   2);
+  renderResultRow('res-total',  r.totGross,2);
+
+  // Absolute table
+  const tbody = document.getElementById('result-tbody');
+  const rows = [
+    {label:'BAU (Mio ton CO₂)',                arr:r.bau,         cls:'td-red',    dp:4},
+    {label:'After STEC Initiatives',           arr:r.afterSTEC,   cls:'td-yellow', dp:4},
+    {label:'After CF Initiatives',             arr:r.afterCF,     cls:'td-yellow', dp:4},
+    {label:'After TSR Initiatives',            arr:r.afterTSR,    cls:'td-yellow', dp:4},
+    {label:'After Electricity Initiatives',    arr:r.afterElec,   cls:'td-blue',   dp:4},
+    {label:'Carbon Capture CCUS (Mio ton)',    arr:r.ccusAbs,     cls:'td-blue',   dp:4},
+    {label:'After Carbon Capture',             arr:r.afterCCUS,   cls:'td-blue',   dp:4},
+    {label:'Recarbonation (Mio ton)',          arr:r.recarbAbs,   cls:'td-blue',   dp:4},
+    {label:'After Recarbonation',              arr:r.afterRecarb, cls:'td-blue',   dp:4},
+    {label:'Offset (Mio ton)',                 arr:r.offset,      cls:'td-yellow', dp:4},
+    {label:'Remain CO₂',                       arr:r.remain,      cls:'td-green',  dp:4},
+    {label:'Total Reduction from Baseline',    arr:r.totRed,      cls:'td-green',  dp:4},
+    {label:'% Reduction from BAU',             arr:r.pctRed,      cls:'td-green',  dp:2, suffix:'%'},
+  ];
+  tbody.innerHTML = rows.map(row => `
+    <tr><td>${row.label}</td>
+    ${row.arr.map(v=>`<td class="${row.cls}">${v.toFixed(row.dp)}${row.suffix||''}</td>`).join('')}
+    </tr>`).join('');
+
+  // KPI contributions
+  const kpiEl = document.getElementById('kpi-contributions');
+  const contrib = [
+    {label:'STEC',              val:r.contSTEC,  color:'kpi-yellow'},
+    {label:'Clinker Factor (CF)',val:r.contCF,   color:'kpi-green'},
+    {label:'TSR',               val:r.contTSR,   color:'kpi-green'},
+    {label:'Electricity Scope 2',val:r.contElec, color:'kpi-blue'},
+    {label:'CCUS',              val:r.contCCUS,  color:'kpi-red'},
+    {label:'Recarbonation',     val:r.contRecarb,color:'kpi-blue'},
+    {label:'Offset',            val:r.contOffset,color:'kpi-yellow'},
+  ];
+  kpiEl.innerHTML = contrib.map(c=>`
+    <div class="kpi-card">
+      <div class="kpi-label">${c.label}</div>
+      <div class="kpi-value ${c.color}">${Math.abs(c.val).toFixed(2)}%</div>
+      <div class="kpi-unit">contribution to net zero 2050</div>
+    </div>`).join('');
+}
+
+// ============================
+// CHARTS
+// ============================
+let charts = {};
+function destroyChart(id) { if (charts[id]) { charts[id].destroy(); charts[id]=null; } }
+
+const PAL = {
+  bau:'#f87171', stec:'#fb923c', cf:'#facc15', tsr:'#4ade80',
+  elec:'#60a5fa', ccus:'#a78bfa', recarb:'#34d399', remain:'#22d3a5',
+};
+
+function baseOpts(yLabel) {
+  return {
+    responsive:true,
+    plugins:{
+      legend:{labels:{color:'#475569',font:{family:'Syne',size:11},boxWidth:14,padding:14}},
+      tooltip:{backgroundColor:'#1e293b',titleColor:'#f8fafc',bodyColor:'#94a3b8',borderColor:'#cbd5e1',borderWidth:1}
+    },
+    scales:{
+      x:{ticks:{color:'#475569',font:{family:'JetBrains Mono',size:11}},grid:{color:'rgba(203,213,225,0.8)'}},
+      y:{ticks:{color:'#475569',font:{family:'JetBrains Mono',size:11}},grid:{color:'rgba(203,213,225,0.8)'},
+         title:{display:true,text:yLabel,color:'#64748b',font:{family:'Syne',size:11}}}
+    }
+  };
+}
+
+function renderCharts(r) {
+  const yrs = YEARS;
+  const f = v => +v.toFixed(4);
+
+  // --- ROADMAP: Stacked area chart (model after IEA cement roadmap) ---
+  // Layers from bottom to top (stacked fill):
+  //   0. Net Zero Remain (bottom, hatched grey)
+  //   1. Recarbonation band
+  //   2. Electricity (scope 2) band
+  //   3. CCUS band
+  //   4. TSR band
+  //   5. CF band
+  //   6. STEC band      ← top = reaches BAU line
+  // Each band = difference between successive scenarios
+  // BAU = dashed line on top
+
+  const bandSTEC   = r.bau.map((v,i)          => +(v - r.afterSTEC[i]).toFixed(4));
+  const bandCF     = r.afterSTEC.map((v,i)    => +(v - r.afterCF[i]).toFixed(4));
+  const bandTSR    = r.afterCF.map((v,i)      => +(v - r.afterTSR[i]).toFixed(4));
+  const bandElec   = r.afterTSR.map((v,i)     => +(v - r.afterElec[i]).toFixed(4));
+  const bandCCUS   = r.afterElec.map((v,i)    => +(v - r.afterCCUS[i]).toFixed(4));
+  const bandRecarb = r.afterCCUS.map((v,i)    => +(v - r.afterRecarb[i]).toFixed(4));
+  const bandOffset = r.afterRecarb.map((v,i)  => +(v - r.remain[i]).toFixed(4));
+  const bandRemain = r.remain.map(v => +v.toFixed(4));
+
+  // Contribution % labels — denominator = BAU[6] (total gross before any reduction)
+  const tot2050 = r.bau[6];
+  function pct2050(band) { return tot2050 > 0 ? Math.round(band[6]/tot2050*100) : 0; }
+
+  destroyChart('roadmap');
+  charts['roadmap'] = new Chart(document.getElementById('chartRoadmap').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: yrs,
+      datasets: [
+        // BAU dashed line (no fill)
+        {
+          label: 'BAU (Business as Usual)',
+          data: r.bau.map(f),
+          borderColor: '#64b5f6',
+          borderDash: [8, 5],
+          borderWidth: 2.5,
+          backgroundColor: 'transparent',
+          fill: false,
+          tension: 0.35,
+          pointRadius: 0,
+          order: 0
+        },
+        // Stacked bands from top to bottom (Chart.js fills downward to previous dataset)
+        {
+          label: 'STEC Initiatives — ' + pct2050(bandSTEC) + '%',
+          data: r.bau.map(f),
+          borderColor: 'rgba(134,179,100,0)',
+          backgroundColor: 'rgba(172,211,143,0.82)',
+          fill: '+1',
+          tension: 0.35,
+          pointRadius: 0,
+          borderWidth: 0,
+          order: 1
+        },
+        {
+          label: 'CF Initiatives (Clinker Factor) — ' + pct2050(bandCF) + '%',
+          data: r.afterSTEC.map(f),
+          borderColor: 'rgba(76,153,0,0)',
+          backgroundColor: 'rgba(76,153,0,0.82)',
+          fill: '+1',
+          tension: 0.35,
+          pointRadius: 0,
+          borderWidth: 0,
+          order: 2
+        },
+        {
+          label: 'TSR Initiatives (Clinker Production) — ' + pct2050(bandTSR) + '%',
+          data: r.afterCF.map(f),
+          borderColor: 'rgba(230,81,0,0)',
+          backgroundColor: 'rgba(239,108,0,0.85)',
+          fill: '+1',
+          tension: 0.35,
+          pointRadius: 0,
+          borderWidth: 0,
+          order: 3
+        },
+        {
+          label: 'Electricity Decarbonisation (Scope 2) — ' + pct2050(bandElec) + '%',
+          data: r.afterTSR.map(f),
+          borderColor: 'rgba(198,40,40,0)',
+          backgroundColor: 'rgba(229,57,53,0.82)',
+          fill: '+1',
+          tension: 0.35,
+          pointRadius: 0,
+          borderWidth: 0,
+          order: 4
+        },
+        {
+          label: 'Carbon Capture & Storage (CCUS) — ' + pct2050(bandCCUS) + '%',
+          data: r.afterElec.map(f),
+          borderColor: 'rgba(74,20,140,0)',
+          backgroundColor: 'rgba(106,27,154,0.85)',
+          fill: '+1',
+          tension: 0.35,
+          pointRadius: 0,
+          borderWidth: 0,
+          order: 5
+        },
+        {
+          label: 'CO₂ Sink: Recarbonation — ' + pct2050(bandRecarb) + '%',
+          data: r.afterCCUS.map(f),
+          borderColor: 'rgba(2,136,209,0)',
+          backgroundColor: 'rgba(3,169,244,0.85)',
+          fill: '+1',
+          tension: 0.35,
+          pointRadius: 0,
+          borderWidth: 0,
+          order: 6
+        },
+        {
+          label: 'Offset — ' + pct2050(bandOffset) + '%',
+          data: r.afterRecarb.map(f),
+          borderColor: 'rgba(245,158,11,0)',
+          backgroundColor: 'rgba(251,191,36,0.85)',
+          fill: '+1',
+          tension: 0.35,
+          pointRadius: 0,
+          borderWidth: 0,
+          order: 7
+        },
+        {
+          label: 'Remain CO₂ (Net Zero Path)',
+          data: r.remain.map(f),
+          borderColor: 'rgba(140,140,140,0)',
+          backgroundColor: 'rgba(180,180,180,0.45)',
+          fill: 'origin',
+          tension: 0.35,
+          pointRadius: 0,
+          borderWidth: 0,
+          order: 8
+        },
+      ]
+    },
+    options: {
+      responsive: true,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: {
+          position: 'right',
+          align: 'center',
+          labels: {
+            color: '#334155',
+            font: { family: 'Syne', size: 11, weight: '600' },
+            boxWidth: 14, boxHeight: 14,
+            padding: 12,
+            usePointStyle: false
+          }
+        },
+        tooltip: {
+          backgroundColor: '#1e293b',
+          titleColor: '#f8fafc',
+          bodyColor: '#94a3b8',
+          borderColor: '#cbd5e1',
+          borderWidth: 1,
+          callbacks: {
+            label: ctx => {
+              if (ctx.datasetIndex === 0) return ' BAU: ' + ctx.raw.toFixed(3) + ' Mio ton';
+              if (ctx.datasetIndex === 7) return ' Remain: ' + ctx.raw.toFixed(3) + ' Mio ton';
+              return ' ' + ctx.dataset.label.split(' — ')[0] + ': ' + ctx.raw.toFixed(3) + ' Mio ton';
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#475569', font: { family: 'JetBrains Mono', size: 11 } },
+          grid: { color: 'rgba(203,213,225,0.6)' }
+        },
+        y: {
+          min: 0,
+          ticks: { color: '#475569', font: { family: 'JetBrains Mono', size: 11 } },
+          grid: { color: 'rgba(203,213,225,0.6)' },
+          title: { display: true, text: 'CO₂ emissions (Mio ton CO₂)', color: '#64748b', font: { family: 'Syne', size: 11 } }
+        }
+      }
+    }
+  });
+
+  // --- Marimekko / Proportional Area Chart ---
+  // Matches reference image: colored blocks proportional to % contribution,
+  // split into two rows within each column based on sub-initiatives.
+  // Our initiatives mapped to reference categories:
+  //   STEC (thermal efficiency) + TSR (alt fuels/waste) → "Savings in clinker production"
+  //   CF (clinker factor / cement binders)              → "Savings in cement & binders"  
+  //   CCUS                                               → "Carbon capture (CCUS)"
+  //   Electricity (scope 2)                              → "Decarbonisation of electricity"
+  //   Recarbonation                                      → "CO₂ sink: recarbonation"
+  // We render 4 columns matching the reference layout.
+
+  const pSTEC   = pct2050(bandSTEC);
+  const pCF     = pct2050(bandCF);
+  const pTSR    = pct2050(bandTSR);
+  const pElec   = pct2050(bandElec);
+  const pCCUS   = pct2050(bandCCUS);
+  const pRecarb = pct2050(bandRecarb);
+  const pOffset = pct2050(bandOffset);
+  const totalR  = r.bau[6]; // Mio ton BAU (denominator for %)
+
+  function mioTon(band) { return band[6].toFixed(2) + ' Mio ton'; }
+
+  // Columns definition (matching reference):
+  // Col 1: STEC (top) + TSR (bottom) — "Savings in clinker production"
+  // Col 2: CF — "Savings in cement & binders"
+  // Col 3: Elec (top) + Recarb (bottom) — small side-by-side blocks
+  // Col 4: CCUS — "Carbon Capture (CCUS)"
+  // We'll replicate the visual: 4 columns, col3 split into 2 narrow sub-cols
+
+  const cols = [
+    {
+      pct: pSTEC + pTSR,
+      color1: '#E65100', label1: pSTEC + '%', sub1: mioTon(bandSTEC), name1: 'STEC',
+      color2: '#388E3C', label2: pTSR + '%',  sub2: mioTon(bandTSR),  name2: 'TSR',
+      title: 'Savings in clinker production',
+      titleColor: '#E65100',
+      bullets: ['Thermal efficiency (STEC)', 'Alternative & biomass fuels (TSR)', 'Decarbonated raw materials'],
+      bulletPos: 'top-left'
+    },
+    {
+      pct: pCF,
+      color1: '#F4A261', label1: pCF + '%', sub1: mioTon(bandCF), name1: 'CF',
+      color2: null,
+      title: 'Savings in cement & binders',
+      titleColor: '#E8833A',
+      bullets: ['Portland clinker substitution', 'Clinker-to-cement ratio', 'Alt. binders'],
+      bulletPos: 'top-right'
+    },
+    {
+      pct: pElec + pRecarb,
+      split: true,
+      color1: '#29B6F6', label1: pElec + '%', sub1: mioTon(bandElec), name1: 'Electricity',
+      color2: '#0288D1', label2: pRecarb + '%', sub2: mioTon(bandRecarb), name2: 'Recarb',
+      title1: 'Decarbonisation of electricity',
+      title2: 'CO₂ sink: recarbonation',
+      titleColor1: '#29B6F6',
+      titleColor2: '#0288D1',
+      bullets1: ['Grid decarbonisation', 'On-site solar (PLTS)'],
+      bullets2: ['Natural CO₂ uptake in concrete'],
+      bulletPos: 'bottom'
+    },
+    {
+      pct: pCCUS,
+      color1: '#6A1B9A', label1: pCCUS + '%', sub1: mioTon(bandCCUS), name1: 'CCUS',
+      color2: null,
+      title: 'Carbon capture & storage (CCUS)',
+      titleColor: '#7B1FA2',
+      bullets: ['Carbon capture at cement plants', 'Storage & utilisation'],
+      bulletPos: 'top-right'
+    },
+    {
+      pct: pOffset,
+      color1: '#F59E0B', label1: pOffset + '%', sub1: mioTon(bandOffset), name1: 'Offset',
+      color2: null,
+      title: 'Offset',
+      titleColor: '#D97706',
+      bullets: ['Remaining CO₂ offset', 'Net zero balance'],
+      bulletPos: 'top-right'
+    }
+  ];
+
+  const el = document.getElementById('marimekko-chart');
+  if (!el) return;
+
+  const totalPct = cols.reduce((s,c) => s + c.pct, 0) || 100;
+
+  let html = '<div style="display:flex;gap:4px;align-items:stretch;width:100%;font-family:Syne,sans-serif;">';
+
+  cols.forEach((col, ci) => {
+    const widthPct = (col.pct / totalPct * 100).toFixed(2);
+    html += '<div style="flex:0 0 ' + widthPct + '%;display:flex;flex-direction:column;gap:0;">';
+
+    if (col.split) {
+      // Two sub-columns side by side (Elec + Recarb)
+      const w1 = (pElec/(pElec+pRecarb)*100).toFixed(1);
+      const w2 = (pRecarb/(pElec+pRecarb)*100).toFixed(1);
+      html += '<div style="display:flex;gap:4px;height:180px;">';
+      // Elec block
+      html += '<div style="flex:0 0 ' + w1 + '%;background:' + col.color1 + ';border-radius:6px 0 0 6px;display:flex;flex-direction:column;justify-content:flex-end;padding:8px 6px;color:#fff;">';
+      html += '<div style="font-size:16px;font-weight:800;line-height:1;">' + col.label1 + '</div>';
+      html += '<div style="font-size:10px;margin-top:6px;opacity:0.85;font-family:JetBrains Mono,monospace;">' + col.sub1 + '</div>';
+      html += '</div>';
+      // Recarb block
+      html += '<div style="flex:0 0 ' + w2 + '%;background:' + col.color2 + ';border-radius:0 6px 6px 0;display:flex;flex-direction:column;justify-content:flex-end;padding:8px 6px;color:#fff;">';
+      html += '<div style="font-size:16px;font-weight:800;line-height:1;">' + col.label2 + '</div>';
+      html += '<div style="font-size:10px;margin-top:6px;opacity:0.85;font-family:JetBrains Mono,monospace;">' + col.sub2 + '</div>';
+      html += '</div>';
+      html += '</div>';
+      // Labels below for split columns
+      html += '<div style="display:flex;gap:4px;margin-top:8px;">';
+      html += '<div style="flex:0 0 ' + w1 + '%;padding-right:4px;">';
+      html += '<div style="font-size:11px;font-weight:700;color:' + col.titleColor1 + ';margin-bottom:4px;">' + col.title1 + '</div>';
+      col.bullets1.forEach(b => { html += '<div style="font-size:10px;color:#475569;padding-left:8px;">• ' + b + '</div>'; });
+      html += '</div>';
+      html += '<div style="flex:0 0 ' + w2 + '%;padding-left:4px;">';
+      html += '<div style="font-size:11px;font-weight:700;color:' + col.titleColor2 + ';margin-bottom:4px;">' + col.title2 + '</div>';
+      col.bullets2.forEach(b => { html += '<div style="font-size:10px;color:#475569;padding-left:8px;">• ' + b + '</div>'; });
+      html += '</div>';
+      html += '</div>';
+
+    } else if (col.color2) {
+      // Two stacked blocks (STEC on top, TSR on bottom)
+      const h1 = Math.round(pSTEC / (pSTEC + pTSR) * 180);
+      const h2 = 180 - h1 - 4;
+      html += '<div style="display:flex;flex-direction:column;gap:4px;">';
+      // Top block
+      html += '<div style="background:' + col.color1 + ';border-radius:6px 6px 0 0;height:' + h1 + 'px;display:flex;flex-direction:column;justify-content:flex-end;padding:8px;color:#fff;">';
+      html += '<div style="font-size:16px;font-weight:800;line-height:1;">' + col.label1 + '</div>';
+      html += '<div style="font-size:10px;margin-top:6px;opacity:0.85;font-family:JetBrains Mono,monospace;">' + col.sub1 + '</div>';
+      html += '</div>';
+      // Bottom block
+      html += '<div style="background:' + col.color2 + ';border-radius:0 0 6px 6px;height:' + h2 + 'px;display:flex;flex-direction:column;justify-content:flex-end;padding:8px;color:#fff;">';
+      html += '<div style="font-size:16px;font-weight:800;line-height:1;">' + col.label2 + '</div>';
+      html += '<div style="font-size:10px;margin-top:6px;opacity:0.85;font-family:JetBrains Mono,monospace;">' + col.sub2 + '</div>';
+      html += '</div>';
+      html += '</div>';
+      // Label below
+      html += '<div style="margin-top:8px;">';
+      html += '<div style="font-size:11px;font-weight:700;color:' + col.titleColor + ';margin-bottom:4px;">' + col.title + '</div>';
+      col.bullets.forEach(b => { html += '<div style="font-size:10px;color:#475569;padding-left:8px;">• ' + b + '</div>'; });
+      html += '</div>';
+
+    } else {
+      // Single block
+      html += '<div style="background:' + col.color1 + ';border-radius:6px;height:180px;display:flex;flex-direction:column;justify-content:flex-end;padding:10px;color:#fff;">';
+      html += '<div style="font-size:20px;font-weight:800;line-height:1;">' + col.label1 + '</div>';
+      html += '<div style="font-size:11px;margin-top:8px;opacity:0.85;font-family:JetBrains Mono,monospace;">' + col.sub1 + '</div>';
+      html += '</div>';
+      // Label below
+      html += '<div style="margin-top:8px;">';
+      html += '<div style="font-size:11px;font-weight:700;color:' + col.titleColor + ';margin-bottom:4px;">' + col.title + '</div>';
+      col.bullets.forEach(b => { html += '<div style="font-size:10px;color:#475569;padding-left:8px;">• ' + b + '</div>'; });
+      html += '</div>';
+    }
+
+    html += '</div>'; // close column
+  });
+
+  html += '</div>'; // close flex row
+
+  // Total row
+  html += '<div style="margin-top:20px;padding-top:14px;border-top:2px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;">';
+  html += '<div style="font-size:13px;font-weight:800;color:#1e293b;text-transform:uppercase;letter-spacing:1px;">Total Reduction</div>';
+  html += '<div style="font-size:13px;font-weight:800;color:#1e293b;font-family:JetBrains Mono,monospace;">' + (pSTEC+pCF+pTSR+pElec+pCCUS+pRecarb+pOffset) + '% · ' + (r.bau[6]-r.remain[6]).toFixed(2) + ' Mio ton CO₂ reduction</div>';
+  html += '</div>';
+
+  el.innerHTML = html;
+
+  // ── Shared afterDraw plugin: draws value labels on stacked bar ──
+  const stackedBarLabelPlugin = {
+    id: 'stackedBarLabels',
+    afterDatasetsDraw(chart) {
+      const ctx2 = chart.ctx;
+      ctx2.save();
+      chart.data.datasets.forEach((ds, di) => {
+        const meta = chart.getDatasetMeta(di);
+        meta.data.forEach((bar, i) => {
+          const val = ds.data[i];
+          if (val == null || val === 0) return;
+          const label = val.toFixed(1);
+          ctx2.font = 'bold 10px JetBrains Mono, monospace';
+          ctx2.textAlign = 'center';
+          ctx2.textBaseline = 'middle';
+          // place label in center of segment
+          const yMid = (bar.y + bar.base) / 2;
+          const segH = Math.abs(bar.base - bar.y);
+          if (segH < 14) return; // skip if too narrow
+          ctx2.fillStyle = '#fff';
+          ctx2.fillText(label, bar.x, yMid);
+        });
+      });
+      // total label above each bar group
+      ctx2.font = 'bold 10px JetBrains Mono, monospace';
+      ctx2.textAlign = 'center';
+      ctx2.textBaseline = 'bottom';
+      const totals = chart.data.datasets[0].data.map((v,i) =>
+        chart.data.datasets.reduce((s,ds) => s + (ds.data[i]||0), 0));
+      chart.getDatasetMeta(chart.data.datasets.length-1).data.forEach((bar, i) => {
+        const tw = ctx2.measureText(totals[i].toFixed(1)).width + 8;
+        const tx = bar.x - tw/2, ty = bar.y - 16;
+        ctx2.fillStyle = 'rgba(255,255,255,0.88)';
+        ctx2.beginPath(); ctx2.roundRect(tx, ty, tw, 14, 3); ctx2.fill();
+        ctx2.fillStyle = '#334155';
+        ctx2.fillText(totals[i].toFixed(1), bar.x, bar.y - 3);
+      });
+      ctx2.restore();
+    }
+  };
+
+  // ── Shared afterDraw plugin: draws value labels on line chart points ──
+  const lineLabelPlugin = {
+    id: 'lineLabels',
+    afterDatasetsDraw(chart) {
+      const ctx2 = chart.ctx;
+      ctx2.save();
+      chart.data.datasets.forEach((ds, di) => {
+        const meta = chart.getDatasetMeta(di);
+        meta.data.forEach((pt, i) => {
+          const val = ds.data[i];
+          if (val == null) return;
+          const label = val.toFixed(1);
+          ctx2.font = 'bold 10px JetBrains Mono, monospace';
+          ctx2.textAlign = 'center';
+          ctx2.textBaseline = 'bottom';
+          const tw = ctx2.measureText(label).width + 8;
+          const tx = pt.x - tw/2, ty = pt.y - 16;
+          ctx2.fillStyle = 'rgba(255,255,255,0.88)';
+          ctx2.beginPath(); ctx2.roundRect(tx, ty, tw, 14, 3); ctx2.fill();
+          ctx2.fillStyle = ds.borderColor || '#334155';
+          ctx2.fillText(label, pt.x, pt.y - 3);
+        });
+      });
+      ctx2.restore();
+    }
+  };
+
+  // --- Specific stacked bar with labels ---
+  destroyChart('specific');
+  charts['specific'] = new Chart(document.getElementById('chartSpecific').getContext('2d'), {
+    type:'bar',
+    data:{labels:yrs,datasets:[
+      {label:'Scope 1 Gross (kg CO₂/ton cem eq)',data:r.s1Gross.map(v=>+v.toFixed(2)),backgroundColor:'rgba(220,38,38,0.75)',borderColor:'#dc2626',borderWidth:1,borderRadius:0,stack:'a'},
+      {label:'Scope 2 (kg CO₂/ton cem eq)',       data:r.s2.map(v=>+v.toFixed(2)),      backgroundColor:'rgba(37,99,235,0.75)', borderColor:'#2563eb',borderWidth:1,borderRadius:0,stack:'a'},
+    ]},
+    plugins:[stackedBarLabelPlugin],
+    options:{
+      ...baseOpts('kg CO₂/ton cem eq'),
+      scales:{
+        x:{...baseOpts('kg CO₂/ton cem eq').scales.x,stacked:true},
+        y:{...baseOpts('kg CO₂/ton cem eq').scales.y,stacked:true}
+      }
+    }
+  });
+
+  // --- Scope line with point labels ---
+  destroyChart('scope12');
+  charts['scope12'] = new Chart(document.getElementById('chartScope12').getContext('2d'), {
+    type:'line',
+    data:{labels:yrs,datasets:[
+      {label:'Scope 1 Gross',data:r.s1Gross.map(v=>+v.toFixed(2)),borderColor:'#dc2626',backgroundColor:'rgba(220,38,38,0.08)',fill:true,tension:0.4,borderWidth:2,pointRadius:5,pointBackgroundColor:'#dc2626'},
+      {label:'Scope 2',      data:r.s2.map(v=>+v.toFixed(2)),      borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,0.08)', fill:true,tension:0.4,borderWidth:2,pointRadius:5,pointBackgroundColor:'#2563eb'},
+      {label:'Total S1+S2',  data:r.totGross.map(v=>+v.toFixed(2)),borderColor:'#475569',backgroundColor:'transparent',tension:0.4,borderWidth:2,borderDash:[4,3],pointRadius:5,pointBackgroundColor:'#475569'},
+    ]},
+    plugins:[lineLabelPlugin],
+    options:baseOpts('kg CO₂/ton cem eq')
+  });
+
+  // ==============================
+  // WATERFALL CHART (exact K73:L83)
+  // Items: 11 total, idx 6 = "Remaining" is subtotal
+  // idx 0 = absolute start (2010 Reff)
+  // idx 6 = subtotal (Remaining = afterElec[6])
+  // idx 10 = final (Net Zero 2050)
+  // ==============================
+  const wf = r.wfVals;
+  const wfLabels = r.wfLabels;
+  // SUBTOTAL indices: 0 (start), 6 (Remaining), 10 (Net Zero)
+  const subtotalSet = new Set([0, 6, 10]);
+
+  // Build floating bar bases
+  // For subtotals: bar sits on 0 (full height)
+  // For increments: floating bar on cumulative base
+  let running = 0;
+  const barStarts = [];   // bottom of floating bar
+  const barHeights = [];  // height of floating bar (always positive)
+  const barColors = [];
+  const trueVals = [];    // actual signed value for tooltip
+
+  for (let i = 0; i < wf.length; i++) {
+    const v = wf[i];
+    trueVals.push(v);
+    if (subtotalSet.has(i)) {
+      // Subtotal: starts at 0, height = running total at that point
+      if (i === 0) {
+        // 2010 Reff: start at 0, height = v
+        barStarts.push(0);
+        barHeights.push(v);
+        running = v;
+        barColors.push('rgba(59,130,246,0.85)');
+      } else if (i === 6) {
+        // Remaining subtotal = afterElec[6] (current running = afterElec[6])
+        barStarts.push(0);
+        barHeights.push(running);   // running = afterElec[6]
+        barColors.push('rgba(59,130,246,0.85)');
+        // running stays same (subtotal doesn't change running)
+      } else if (i === 10) {
+        // Net Zero: running after all reductions
+        barStarts.push(0);
+        barHeights.push(Math.max(0, running));
+        barColors.push('rgba(34,211,165,0.85)');
+      }
+    } else {
+      if (v >= 0) {
+        // Positive increment (going up) = increase
+        barStarts.push(running);
+        barHeights.push(v);
+        barColors.push('rgba(248,113,113,0.8)');
+        running += v;
+      } else {
+        // Negative increment (going down) = reduction
+        const newRunning = running + v;
+        barStarts.push(newRunning < 0 ? 0 : newRunning);
+        barHeights.push(Math.abs(v));
+        barColors.push('rgba(34,211,165,0.8)');
+        running += v;
+      }
+    }
+  }
+
+  destroyChart('waterfall');
+  charts['waterfall'] = new Chart(document.getElementById('chartWaterfall').getContext('2d'), {
+    type:'bar',
+    data:{
+      labels: wfLabels,
+      datasets:[
+        // Invisible spacer bar (for floating effect)
+        {
+          label:'_spacer',
+          data: barStarts,
+          backgroundColor:'transparent',
+          borderColor:'transparent',
+          stack:'wf'
+        },
+        // Visible value bar
+        {
+          label:'Value (Mio ton CO₂)',
+          data: barHeights,
+          backgroundColor: barColors,
+          borderColor: barColors.map(c=>c.replace('0.8','1').replace('0.85','1')),
+          borderWidth:1,
+          borderRadius:3,
+          stack:'wf'
+        }
+      ]
+    },
+    options:{
+      responsive:true,
+      animation: { onComplete: function() {
+        const chart = this;
+        const ctx2 = chart.ctx;
+        ctx2.save();
+        ctx2.font = 'bold 10px JetBrains Mono, monospace';
+        ctx2.textAlign = 'center';
+        ctx2.textBaseline = 'bottom';
+        chart.data.datasets[1].data.forEach((val, i) => {
+          const meta = chart.getDatasetMeta(1);
+          if (!meta.data[i]) return;
+          const bar = meta.data[i];
+          const x = bar.x;
+          const top = bar.y;
+          const tv = trueVals[i];
+          const label = (tv >= 0 ? '+' : '') + tv.toFixed(2);
+          // background pill
+          const tw = ctx2.measureText(label).width + 8;
+          const th = 14;
+          const tx = x - tw/2;
+          const ty = top - th - 3;
+          ctx2.fillStyle = 'rgba(255,255,255,0.85)';
+          ctx2.beginPath();
+          ctx2.roundRect(tx, ty, tw, th, 3);
+          ctx2.fill();
+          ctx2.fillStyle = tv >= 0 ? '#dc2626' : (i===0||i===6||i===10 ? '#1d4ed8' : '#059669');
+          ctx2.fillText(label, x, top - 4);
+        });
+        ctx2.restore();
+      }},
+      plugins:{
+        legend:{
+          labels:{
+            filter: item => item.text !== '_spacer',
+            color:'#475569',font:{family:'Syne',size:11}
+          }
+        },
+        tooltip:{
+          backgroundColor:'#1e293b',titleColor:'#f8fafc',bodyColor:'#94a3b8',
+          borderColor:'#cbd5e1',borderWidth:1,
+          callbacks:{
+            label: ctx => {
+              if (ctx.datasetIndex === 0) return null;
+              const v = trueVals[ctx.dataIndex];
+              return ` ${v >= 0 ? '+' : ''}${v.toFixed(4)} Mio ton CO₂`;
+            },
+            title: ctx => wfLabels[ctx[0].dataIndex]
+          }
+        }
+      },
+      scales:{
+        x:{
+          stacked:true,
+          ticks:{color:'#475569',font:{family:'JetBrains Mono',size:10}},
+          grid:{color:'rgba(203,213,225,0.6)'}
+        },
+        y:{
+          stacked:true,
+          ticks:{color:'#475569',font:{family:'JetBrains Mono',size:11}},
+          grid:{color:'rgba(203,213,225,0.6)'},
+          title:{display:true,text:'Mio ton CO₂',color:'#64748b',font:{family:'Syne',size:11}}
+        }
+      }
+    }
+  });
+
+  // --- Waterfall data table ---
+  const wfTbody = document.getElementById('wf-tbody');
+  const typeLabel = (i, v) => {
+    if (i===0) return '<span style="color:#60a5fa">Baseline</span>';
+    if (i===6) return '<span style="color:#60a5fa">Subtotal</span>';
+    if (i===10) return '<span style="color:#22d3a5">Final</span>';
+    return v >= 0
+      ? '<span style="color:#f87171">Increase ▲</span>'
+      : '<span style="color:#22d3a5">Reduction ▼</span>';
+  };
+  wfTbody.innerHTML = wf.map((v,i) => `
+    <tr>
+      <td style="color:var(--muted)">${i}</td>
+      <td>${wfLabels[i]}</td>
+      <td class="${v>=0?'td-red':'td-green'}">${v>=0?'+':''}${v.toFixed(4)}</td>
+      <td>${typeLabel(i,v)}</td>
+    </tr>`).join('');
+
+  // --- Pie with % labels ---
+  const pieLabelPlugin = {
+    id: 'pieLabelPlugin',
+    afterDatasetsDraw(chart) {
+      const ctx2 = chart.ctx;
+      const ds = chart.data.datasets[0];
+      const total = ds.data.reduce((s,v) => s+v, 0);
+      ctx2.save();
+      chart.getDatasetMeta(0).data.forEach((arc, i) => {
+        const val = ds.data[i];
+        if (val < 1) return;
+        const angle = (arc.startAngle + arc.endAngle) / 2;
+        const r2 = (arc.innerRadius + arc.outerRadius) / 2;
+        const x = arc.x + Math.cos(angle) * r2;
+        const y = arc.y + Math.sin(angle) * r2;
+        const pctLabel = Math.round(val) + '%';
+        ctx2.font = 'bold 12px Syne, sans-serif';
+        ctx2.textAlign = 'center';
+        ctx2.textBaseline = 'middle';
+        ctx2.fillStyle = '#fff';
+        ctx2.fillText(pctLabel, x, y);
+      });
+      ctx2.restore();
+    }
+  };
+  destroyChart('pie');
+  charts['pie'] = new Chart(document.getElementById('chartPie').getContext('2d'), {
+    type:'doughnut',
+    data:{
+      labels:['STEC','CF','TSR','Electricity (Scope 2)','CCUS','Recarbonation','Offset'],
+      datasets:[{
+        data:[r.contSTEC,r.contCF,r.contTSR,r.contElec,r.contCCUS,r.contRecarb,r.contOffset].map(v=>+Math.abs(v).toFixed(2)),
+        backgroundColor:['#E65100','#F4A261','#388E3C','#29B6F6','#6A1B9A','#0288D1','#F59E0B'],
+        borderColor:'#ffffff',borderWidth:2
+      }]
+    },
+    plugins:[pieLabelPlugin],
+    options:{
+      responsive:true,
+      plugins:{
+        legend:{
+          position:'right',
+          labels:{
+            color:'#334155',
+            font:{family:'Syne',size:12},
+            padding:12,
+            generateLabels(chart) {
+              const ds = chart.data.datasets[0];
+              return chart.data.labels.map((label, i) => ({
+                text: label + '  ' + Math.round(ds.data[i]) + '%',
+                fillStyle: ds.backgroundColor[i],
+                strokeStyle: '#fff',
+                lineWidth: 1,
+                index: i,
+                datasetIndex: 0,
+                hidden: false
+              }));
+            }
+          }
+        },
+        tooltip:{
+          backgroundColor:'#1e293b',titleColor:'#f8fafc',bodyColor:'#94a3b8',
+          callbacks:{label:ctx=>` ${ctx.label}: ${ctx.raw}%`}
+        }
+      }
+    }
+  });
+}
+
+// ============================
+// TABS
+// ============================
+function showTab(name, el) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  el.classList.add('active');
+}
+
+// ============================
+// MAIN UPDATE
+// ============================
+function updateAll() {
+  const r = calc();
+  renderResults(r);
+  renderCharts(r);
+}
+
+buildInputs();
+updateAll();
+</script>
+
+<footer>
+  <div class="footer-brand">🏭 Cement CO₂ Roadmap Simulation</div>
+  <div class="footer-contact">
+    <span>✉️ Contact:</span>
+    <a href="mailto:oepoyoprakoso@gmail.com">oepoyoprakoso@gmail.com</a>
+  </div>
+</footer>
+
+
+</body></html>
